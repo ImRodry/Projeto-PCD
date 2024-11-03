@@ -10,8 +10,16 @@ import java.io.FileFilter;
 public class IscTorrentGUI {
     private JFrame frame;
     private File[] files;
+    private String port;
 
-    public IscTorrentGUI() {
+    public IscTorrentGUI(String path, String port) {
+        this.port = port;
+        files = new File(path).listFiles(new FileFilter() {
+			public boolean accept(File file) {
+				return file.isFile();
+			}
+		});
+        
         frame = new JFrame("IscTorrent");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         Dimension dimenson = Toolkit.getDefaultToolkit().getScreenSize();
@@ -130,7 +138,7 @@ public class IscTorrentGUI {
     }
 
     public static void main(String[] args) {
-        IscTorrentGUI iscTorrentGUI = new IscTorrentGUI();
+        IscTorrentGUI iscTorrentGUI = new IscTorrentGUI("src", "8888");
         iscTorrentGUI.open();
     }
 }
