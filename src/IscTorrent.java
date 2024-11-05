@@ -7,12 +7,12 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileFilter;
 
-public class IscTorrentGUI {
+public class IscTorrent {
     private JFrame frame;
     private File[] files;
     private String port;
 
-    public IscTorrentGUI(String path, String port) {
+    public IscTorrent(String path, String port) {
         this.port = port;
         files = new File(path).listFiles(new FileFilter() {
 			public boolean accept(File file) {
@@ -138,7 +138,7 @@ public class IscTorrentGUI {
     }
 
     public static void main(String[] args) {
-        IscTorrentGUI iscTorrentGUI = new IscTorrentGUI("src", "8888");
+        IscTorrent iscTorrentGUI = new IscTorrent("src", "8888");
         iscTorrentGUI.open();
     }
 }
