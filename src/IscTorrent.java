@@ -14,12 +14,8 @@ public class IscTorrent {
 
     public IscTorrent(String path, String port) {
         this.port = port;
-        files = new File(path).listFiles(new FileFilter() {
-			public boolean accept(File file) {
-				return file.isFile();
-			}
-		});
-        
+        files = new File(path).listFiles((File file) -> file.isFile());
+
         frame = new JFrame("IscTorrent");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         Dimension dimenson = Toolkit.getDefaultToolkit().getScreenSize();
@@ -69,66 +65,54 @@ public class IscTorrent {
             }
         });
 
-        makeConnection.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JFrame connectionFrame = new JFrame("Adicionar Nó");
-                connectionFrame.setLayout(new FlowLayout());
-                connectionFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-                JLabel ipLabel = new JLabel("Endereço:");
-                JTextField ipField = new JTextField(15);
-                JLabel portLabel = new JLabel("Porta:");
-                JTextField portField = new JTextField(7);
-                JButton cancelButton = new JButton("Cancelar");
-                JButton connectButton = new JButton("OK");
-                connectionFrame.add(ipLabel);
-                connectionFrame.add(ipField);
-                connectionFrame.add(portLabel);
-                connectionFrame.add(portField);
-                connectionFrame.add(cancelButton);
-                connectionFrame.add(connectButton);
-                connectionFrame.pack();
-                connectionFrame.setLocationRelativeTo(null);
-                connectionFrame.setVisible(true);
+        makeConnection.addActionListener((ActionEvent e) -> {
+            JFrame connectionFrame = new JFrame("Adicionar Nó");
+            connectionFrame.setLayout(new FlowLayout());
+            connectionFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            JLabel ipLabel = new JLabel("Endereço:");
+            JTextField ipField = new JTextField(15);
+            JLabel portLabel = new JLabel("Porta:");
+            JTextField portField = new JTextField(7);
+            JButton cancelButton = new JButton("Cancelar");
+            JButton connectButton = new JButton("OK");
+            connectionFrame.add(ipLabel);
+            connectionFrame.add(ipField);
+            connectionFrame.add(portLabel);
+            connectionFrame.add(portField);
+            connectionFrame.add(cancelButton);
+            connectionFrame.add(connectButton);
+            connectionFrame.pack();
+            connectionFrame.setLocationRelativeTo(null);
+            connectionFrame.setVisible(true);
 
-                cancelButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        connectionFrame.dispose();
-                    }
-                });
+            cancelButton.addActionListener((ActionEvent _e) -> {
+                connectionFrame.dispose();
+            });
 
-                connectButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        String ip = ipField.getText();
-                        String port = portField.getText();
-                        if (ip != null && !ip.isEmpty() && port != null && !port.isEmpty()) {
-                            // TODO connect to node
-                            connectionFrame.dispose();
-                        } else {
-                            JOptionPane.showMessageDialog(connectionFrame,
-                                    "Por favor insira um endereço e porta válidos.");
-                        }
-                    }
-                });
-            }
+            connectButton.addActionListener((ActionEvent _e) -> {
+                String ip = ipField.getText();
+                String port = portField.getText();
+                if (ip != null && !ip.isEmpty() && port != null && !port.isEmpty()) {
+                    // TODO connect to node
+                    connectionFrame.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(connectionFrame,
+                            "Por favor insira um endereço e porta válidos.");
+                }
+            });
         });
 
-        downloadButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String selectedFile = list.getSelectedValue();
-                // TODO remove the <#> from the file name
-                if (selectedFile != null) {
-                    // TODO download file
-                    // TODO time taken and who provided the file
-                    JOptionPane.showMessageDialog(frame,
-                            "");
-                } else {
-                    JOptionPane.showMessageDialog(frame,
-                            "Por favor selecione um ficheiro para descarregar.");
-                }
+        downloadButton.addActionListener((ActionEvent e) -> {
+            String selectedFile = list.getSelectedValue();
+            // TODO remove the <#> from the file name
+            if (selectedFile != null) {
+                // TODO download file
+                // TODO time taken and who provided the file
+                JOptionPane.showMessageDialog(frame,
+                        "");
+            } else {
+                JOptionPane.showMessageDialog(frame,
+                        "Por favor selecione um ficheiro para descarregar.");
             }
         });
     }
