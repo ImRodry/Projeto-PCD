@@ -1,3 +1,5 @@
+package pt.iscte.pcd.IscTorrent;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -67,11 +69,11 @@ public class IscTorrent {
             JTextField ipField = new JTextField();
             JTextField portField = new JTextField();
             Object[] message = {
-                "Endereço:", ipField,
-                "Porta:", portField
+                    "Endereço:", ipField,
+                    "Porta:", portField
             };
-            int option = JOptionPane.showConfirmDialog(null, message, 
-                "Adicionar Nó", JOptionPane.OK_CANCEL_OPTION);
+            int option = JOptionPane.showConfirmDialog(null, message,
+                    "Adicionar Nó", JOptionPane.OK_CANCEL_OPTION);
             if (option == JOptionPane.OK_OPTION) {
                 String ip = ipField.getText();
                 String port = portField.getText();
