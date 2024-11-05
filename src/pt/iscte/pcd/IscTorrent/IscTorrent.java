@@ -77,9 +77,8 @@ public class IscTorrent {
             if (option == JOptionPane.OK_OPTION) {
                 String ip = ipField.getText();
                 String port = portField.getText();
-                JOptionPane.showMessageDialog(frame, 
-                    "A ligar ao endereço: " + ip + " Porta: " + port);
-                // In the full version, you'd attempt a connection here
+                JOptionPane.showMessageDialog(frame, "A ligar ao endereço: " + ip + " Porta: " + port);
+                // TODO connection
             }
         });
 
