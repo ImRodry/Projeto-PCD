@@ -66,40 +66,21 @@ public class IscTorrent {
         });
 
         makeConnection.addActionListener((ActionEvent e) -> {
-            JFrame connectionFrame = new JFrame("Adicionar Nó");
-            connectionFrame.setLayout(new FlowLayout());
-            connectionFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            JLabel ipLabel = new JLabel("Endereço:");
-            JTextField ipField = new JTextField(15);
-            JLabel portLabel = new JLabel("Porta:");
-            JTextField portField = new JTextField(7);
-            JButton cancelButton = new JButton("Cancelar");
-            JButton connectButton = new JButton("OK");
-            connectionFrame.add(ipLabel);
-            connectionFrame.add(ipField);
-            connectionFrame.add(portLabel);
-            connectionFrame.add(portField);
-            connectionFrame.add(cancelButton);
-            connectionFrame.add(connectButton);
-            connectionFrame.pack();
-            connectionFrame.setLocationRelativeTo(null);
-            connectionFrame.setVisible(true);
-
-            cancelButton.addActionListener((ActionEvent _e) -> {
-                connectionFrame.dispose();
-            });
-
-            connectButton.addActionListener((ActionEvent _e) -> {
+            JTextField ipField = new JTextField();
+            JTextField portField = new JTextField();
+            Object[] message = {
+                "Endereço:", ipField,
+                "Porta:", portField
+            };
+            int option = JOptionPane.showConfirmDialog(null, message, 
+                "Adicionar Nó", JOptionPane.OK_CANCEL_OPTION);
+            if (option == JOptionPane.OK_OPTION) {
                 String ip = ipField.getText();
                 String port = portField.getText();
-                if (ip != null && !ip.isEmpty() && port != null && !port.isEmpty()) {
-                    // TODO connect to node
-                    connectionFrame.dispose();
-                } else {
-                    JOptionPane.showMessageDialog(connectionFrame,
-                            "Por favor insira um endereço e porta válidos.");
-                }
-            });
+                JOptionPane.showMessageDialog(IscTorrentGUI.this, 
+                    "A ligar ao endereço: " + ip + " Porta: " + port);
+                // In the full version, you'd attempt a connection here
+            }
         });
 
         downloadButton.addActionListener((ActionEvent e) -> {
