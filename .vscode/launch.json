@@ -1,0 +1,20 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Launch Java with Arguments",
+      "request": "launch",
+      "mainClass": "pt.iscte.pcd.IscTorrent.IscTorrent",
+      "args": "${input:argsInput}"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "argsInput",
+      "type": "promptString",
+      "description": "Enter arguments for your Java program (separate by spaces)",
+      "default": ""
+    }
+  ]
+}
