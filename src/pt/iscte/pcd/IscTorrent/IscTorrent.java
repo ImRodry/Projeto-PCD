@@ -40,15 +40,15 @@ public class IscTorrent {
         JList<String> list = new JList<>(resultsList);
         JScrollPane listPane = new JScrollPane(list);
 
-        JButton makeConnection = new JButton("Ligar a Nó");
         JButton downloadButton = new JButton("Descarregar");
-        JPanel buttonsPanel = new JPanel(new GridLayout(1, 2));
-        buttonsPanel.add(makeConnection);
+        JButton makeConnection = new JButton("Ligar a Nó");
+        JPanel buttonsPanel = new JPanel(new GridLayout(2, 1));
         buttonsPanel.add(downloadButton);
+        buttonsPanel.add(makeConnection);
 
         frame.add(searchPanel, BorderLayout.NORTH);
         frame.add(listPane, BorderLayout.CENTER);
-        frame.add(buttonsPanel, BorderLayout.SOUTH);
+        frame.add(buttonsPanel, BorderLayout.EAST);
 
         searchButton.addActionListener((ActionEvent e) -> searchFiles(searchField.getText()));
         makeConnection.addActionListener((ActionEvent e) -> connectToNodeDialog());
