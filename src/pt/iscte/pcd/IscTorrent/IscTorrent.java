@@ -3,29 +3,27 @@ package pt.iscte.pcd.IscTorrent;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileFilter;
 
 public class IscTorrent {
     private JFrame frame;
-    private File[] files;
-    private String port;
+    private Node node;
+    private Node[] connectedNodes;
+    DefaultListModel<String> resultsList;
 
-    public IscTorrent(String path, String port) {
-        this.port = port;
-        files = new File(path).listFiles((File file) -> file.isFile());
-
+    public IscTorrent(String path, int port) {
         frame = new JFrame("IscTorrent");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         Dimension dimenson = Toolkit.getDefaultToolkit().getScreenSize();
         frame.setSize(dimenson.width / 2, dimenson.height / 2);
         frame.setLocationRelativeTo(null);
         addFrameContent();
+
+        node = new Node("localHost", port, path);
+        node.runServer();
     }
 
     public void addFrameContent() {
-
         frame.setLayout(new BorderLayout());
 
         JLabel searchText = new JLabel("Texto a procurar:");
@@ -36,7 +34,7 @@ public class IscTorrent {
         searchPanel.add(searchField);
         searchPanel.add(searchButton);
 
-        DefaultListModel<String> resultsList = new DefaultListModel<>();
+        resultsList = new DefaultListModel<>();
         JList<String> list = new JList<>(resultsList);
         JScrollPane listPane = new JScrollPane(list);
 
@@ -50,59 +48,63 @@ public class IscTorrent {
         frame.add(listPane, BorderLayout.CENTER);
         frame.add(buttonsPanel, BorderLayout.SOUTH);
 
-        searchButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                resultsList.clear();
-                String search = searchField.getText();
-                if (search != null && !search.isEmpty()) {
-                    // TODO search for files
-                    // TODO add the number of hosts that have the file
-                    resultsList.addElement(search); // TODO complete file name
-                } else {
-                    JOptionPane.showMessageDialog(frame, "Por favor insira um texto válido para procurar.");
-                }
-            }
-        });
+        searchButton.addActionListener((ActionEvent e) -> searchFiles(searchField.getText()));
+        makeConnection.addActionListener((ActionEvent e) -> connectToNodeDialog());
+        downloadButton.addActionListener((ActionEvent e) -> downloadSelectedFile(list.getSelectedValue()));
 
-        makeConnection.addActionListener((ActionEvent e) -> {
-            JTextField ipField = new JTextField();
-            JTextField portField = new JTextField();
-            Object[] message = {
-                    "Endereço:", ipField,
-                    "Porta:", portField
-            };
-            int option = JOptionPane.showConfirmDialog(null, message,
-                    "Adicionar Nó", JOptionPane.OK_CANCEL_OPTION);
-            if (option == JOptionPane.OK_OPTION) {
-                String ip = ipField.getText();
-                String port = portField.getText();
-                JOptionPane.showMessageDialog(frame, "A ligar ao endereço: " + ip + " Porta: " + port);
-                // TODO connection
-            }
-        });
-
-        downloadButton.addActionListener((ActionEvent e) -> {
-            String selectedFile = list.getSelectedValue();
-            // TODO remove the <#> from the file name
-            if (selectedFile != null) {
-                // TODO download file
-                // TODO time taken and who provided the file
-                JOptionPane.showMessageDialog(frame,
-                        "");
-            } else {
-                JOptionPane.showMessageDialog(frame,
-                        "Por favor selecione um ficheiro para descarregar.");
-            }
-        });
-    }
-
-    public void open() {
         frame.setVisible(true);
     }
 
+    public void searchFiles(String search) {
+        resultsList.clear();
+        if (search == null || search.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Por favor insira um texto válido para procurar.");
+            return;
+        }
+        for (Node connectedNode : connectedNodes) {
+            for (File file : connectedNode.getFiles()) {
+                if (file.getName().contains(search)) {
+                    resultsList.addElement(file.getName());
+                }
+            }
+        }
+    }
+
+    public void connectToNodeDialog() {
+        JTextField ipField = new JTextField();
+        JTextField portField = new JTextField();
+        Object[] message = {
+                "Endereço:", ipField,
+                "Porta:", portField
+        };
+        int option = JOptionPane.showConfirmDialog(null, message,
+                "Adicionar Nó", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            String ip = ipField.getText();
+            String port = portField.getText();
+            try {
+                node.connectToNode(ip, Integer.parseInt(port));
+                JOptionPane.showMessageDialog(frame, "Ligado ao endereço: " + ip + " Porta: " + port);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(frame, "Erro ao ligar ao nó.");
+            }
+        }
+    }
+
+    public void downloadSelectedFile(String file) {
+        if (file != null) {
+            // TODO download file
+            // TODO time taken and who provided the file
+            JOptionPane.showMessageDialog(frame,
+                    "");
+        } else {
+            JOptionPane.showMessageDialog(frame,
+                    "Por favor selecione um ficheiro para descarregar.");
+        }
+    }
+
     public static void main(String[] args) {
-        IscTorrent iscTorrentGUI = new IscTorrent("src", "8888");
-        iscTorrentGUI.open();
+        @SuppressWarnings("unused")
+        IscTorrent iscTorrent = new IscTorrent("dl1", 12345);
     }
 }
