@@ -1,5 +1,5 @@
 package pt.iscte.pcd.IscTorrent;
 
-public class WordSearchResult {
+public class WordSearchMessage {
 
 }
