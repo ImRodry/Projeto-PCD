@@ -4,22 +4,24 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.List;
+import java.util.ArrayList;
 
 public class IscTorrent {
     private JFrame frame;
     private Node node;
-    private Node[] connectedNodes;
+    private List<Node> connectedNodes = new ArrayList<>();
     DefaultListModel<String> resultsList;
 
     public IscTorrent(String path, int port) {
-        frame = new JFrame("IscTorrent");
+        frame = new JFrame("IscTorrent [path=" + path + ", ip=localhost: " + port + "]");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         Dimension dimenson = Toolkit.getDefaultToolkit().getScreenSize();
         frame.setSize(dimenson.width / 2, dimenson.height / 2);
         frame.setLocationRelativeTo(null);
         addFrameContent();
 
-        node = new Node("localHost", port, path);
+        node = new Node(path, port);
         node.runServer();
     }
 
@@ -105,6 +107,6 @@ public class IscTorrent {
 
     public static void main(String[] args) {
         @SuppressWarnings("unused")
-        IscTorrent iscTorrent = new IscTorrent("dl1", 12345);
+        IscTorrent iscTorrent = new IscTorrent(args[0],Integer.parseInt(args[1]));
     }
 }

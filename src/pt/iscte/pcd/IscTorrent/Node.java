@@ -6,25 +6,28 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Node {
     private File[] files;
     private ServerSocket serverSocket;
-    private String ip;
     private int port;
-    private List<ConnectionHandler> connections;
+    private List<ConnectionHandler> connections = new ArrayList<>();
     private ObjectOutputStream out;
     private ObjectInputStream in;
 
-    public Node(String ip, int port, String path) {
-        this.ip = ip;
+    public Node(String path, int port) {
         this.port = port;
         files = new File(path).listFiles((File file) -> file.isFile());
     }
 
     public File[] getFiles() {
         return files;
+    }
+
+    public List<ConnectionHandler> getConnections() {
+        return connections;
     }
 
     public void runServer() {
