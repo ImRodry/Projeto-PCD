@@ -48,6 +48,27 @@ public class Node {
         }
     }
 
+    public void readSearchRequest(WordSearchMessage message) {
+        WordSearchMessage wordSearchMessage = (WordSearchMessage) message;
+        for (File file : files) {
+            if (file.getName().contains(wordSearchMessage.getWord())) {
+                List<FileSearchResult> result = new ArrayList<>();
+                result.add(new FileSearchResult(wordSearchMessage, file.getName(), // TODO file hash
+                        (int) file.length(), file.getName(), "localhost", port));
+                writeMessage(result);
+            }
+        }
+    }
+
+    public void writeMessage(Object message) {
+        try {
+            out.writeObject(message);
+            out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void waitForConnection() throws IOException {
         Socket connection = serverSocket.accept();
         ConnectionHandler handler = new ConnectionHandler(connection);

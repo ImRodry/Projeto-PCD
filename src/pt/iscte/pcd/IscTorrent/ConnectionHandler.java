@@ -36,7 +36,15 @@ public class ConnectionHandler extends Thread {
 
 	private void processConnection() {
 		while (true) {
-			// TODO
+			try {
+				Object message = in.readObject();
+				if (message instanceof WordSearchMessage) {
+					IscTorrent.getInstance().getNode().readSearchRequest((WordSearchMessage)message);
+				}
+			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+				break;
+			}
 		}
 	}
 

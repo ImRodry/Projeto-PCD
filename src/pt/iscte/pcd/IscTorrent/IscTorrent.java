@@ -3,26 +3,38 @@ package pt.iscte.pcd.IscTorrent;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.File;
-import java.util.List;
-import java.util.ArrayList;
 
 public class IscTorrent {
+    private static IscTorrent INSTANCE;
     private JFrame frame;
     private Node node;
-    private List<Node> connectedNodes = new ArrayList<>();
     DefaultListModel<String> resultsList;
 
-    public IscTorrent(String path, int port) {
+    private IscTorrent(String path, int port) {
         frame = new JFrame("IscTorrent [path=" + path + ", ip=localhost: " + port + "]");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        Dimension dimenson = Toolkit.getDefaultToolkit().getScreenSize();
-        frame.setSize(dimenson.width / 2, dimenson.height / 2);
+        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        frame.setSize(dimension.width / 2, dimension.height / 2);
         frame.setLocationRelativeTo(null);
         addFrameContent();
 
         node = new Node(path, port);
         node.runServer();
+    }
+    
+    public static IscTorrent getInstance(String path, int port) {
+        if (INSTANCE == null) {
+            INSTANCE = new IscTorrent(path, port);
+        }
+        return INSTANCE;
+    }
+
+    public static IscTorrent getInstance() {
+        return INSTANCE;
+    }
+
+    public Node getNode() {
+        return node;
     }
 
     public void addFrameContent() {
@@ -58,18 +70,12 @@ public class IscTorrent {
     }
 
     public void searchFiles(String search) {
-        resultsList.clear();
         if (search == null || search.isEmpty()) {
             JOptionPane.showMessageDialog(frame, "Por favor insira um texto válido para procurar.");
             return;
         }
-        for (Node connectedNode : connectedNodes) {
-            for (File file : connectedNode.getFiles()) {
-                if (file.getName().contains(search)) {
-                    resultsList.addElement(file.getName());
-                }
-            }
-        }
+        WordSearchMessage message = new WordSearchMessage(search);
+        node.writeMessage(message);
     }
 
     public void connectToNodeDialog() {
@@ -107,6 +113,6 @@ public class IscTorrent {
 
     public static void main(String[] args) {
         @SuppressWarnings("unused")
-        IscTorrent iscTorrent = new IscTorrent(args[0],Integer.parseInt(args[1]));
+        IscTorrent iscTorrent = getInstance(args[0],Integer.parseInt(args[1]));
     }
 }
