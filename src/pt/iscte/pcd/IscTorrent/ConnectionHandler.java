@@ -47,6 +47,15 @@ public class ConnectionHandler extends Thread {
 		}
 	}
 
+	public void writeMessage(Object message) {
+        try {
+            out.writeObject(message);
+            out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 	private void closeConnection() {
 		try {
 			if (out != null)

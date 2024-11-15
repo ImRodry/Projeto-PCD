@@ -2,8 +2,6 @@ package pt.iscte.pcd.IscTorrent;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -14,6 +12,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 public class Node {
     private Map<Integer, File> files;
@@ -62,22 +62,13 @@ public class Node {
 
     public void readSearchRequest(WordSearchMessage message) {
         WordSearchMessage wordSearchMessage = (WordSearchMessage) message;
-        for (File file : files) {
-            if (file.getName().contains(wordSearchMessage.getWord())) {
+        for (Entry<Integer, File> entry : files.entrySet()) {
+            if (entry.getValue().getName().contains(wordSearchMessage.getWord())) {
                 List<FileSearchResult> result = new ArrayList<>();
-                result.add(new FileSearchResult(wordSearchMessage, file.getName(), // TODO file hash
-                        (int) file.length(), file.getName(), "localhost", port));
+                result.add(new FileSearchResult(wordSearchMessage, entry.getKey(),
+                        (int) entry.getValue().length(), entry.getValue().getName(), "localhost", port));
                 writeMessage(result);
             }
-        }
-    }
-
-    public void writeMessage(Object message) {
-        try {
-            out.writeObject(message);
-            out.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
