@@ -4,25 +4,37 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Node {
-    private File[] files;
+    private Map<Integer, File> files;
     private ServerSocket serverSocket;
     private int port;
     private List<ConnectionHandler> connections = new ArrayList<>();
-    private ObjectOutputStream out;
-    private ObjectInputStream in;
 
     public Node(String path, int port) {
         this.port = port;
-        files = new File(path).listFiles((File file) -> file.isFile());
+        for (File f : new File(path).listFiles((File file) -> file.isFile())) {
+            try {
+                byte[] fileContents = Files.readAllBytes(f.toPath());
+                byte[] hash = MessageDigest.getInstance("SHA-256").digest(fileContents);
+                files.put(new BigInteger(1, hash).intValue(), f);
+            } catch (IOException | NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    public File[] getFiles() {
+    public Map<Integer, File> getFiles() {
         return files;
     }
 

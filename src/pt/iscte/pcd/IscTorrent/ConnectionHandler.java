@@ -12,7 +12,6 @@ public class ConnectionHandler extends Thread {
 
 	public ConnectionHandler(Socket connection) {
 		this.connection = connection;
-		System.out.println("Connection to " + connection.getLocalPort() + " ready!");
 	}
 
 	@Override
@@ -39,7 +38,7 @@ public class ConnectionHandler extends Thread {
 			try {
 				Object message = in.readObject();
 				if (message instanceof WordSearchMessage) {
-					IscTorrent.getInstance().getNode().readSearchRequest((WordSearchMessage)message);
+					IscTorrent.getInstance().getNode().readSearchRequest((WordSearchMessage) message);
 				}
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();

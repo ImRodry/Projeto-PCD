@@ -21,7 +21,7 @@ public class IscTorrent {
         node = new Node(path, port);
         node.runServer();
     }
-    
+
     public static IscTorrent getInstance(String path, int port) {
         if (INSTANCE == null) {
             INSTANCE = new IscTorrent(path, port);
@@ -79,7 +79,7 @@ public class IscTorrent {
     }
 
     public void connectToNodeDialog() {
-        JTextField ipField = new JTextField();
+        JTextField ipField = new JTextField("localhost");
         JTextField portField = new JTextField();
         Object[] message = {
                 "Endereço:", ipField,
@@ -113,6 +113,6 @@ public class IscTorrent {
 
     public static void main(String[] args) {
         @SuppressWarnings("unused")
-        IscTorrent iscTorrent = getInstance(args[0],Integer.parseInt(args[1]));
+        IscTorrent iscTorrent = getInstance(args[0], Integer.parseInt(args[1]));
     }
 }

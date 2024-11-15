@@ -1,7 +1,10 @@
 package pt.iscte.pcd.IscTorrent;
 
-public class WordSearchMessage {
+import java.io.Serializable;
+
+public class WordSearchMessage implements Serializable {
     private String word;
+    private int originPort;
 
     public WordSearchMessage(String word) {
         this.word = word;
