@@ -74,8 +74,8 @@ public class IscTorrent {
             JOptionPane.showMessageDialog(frame, "Por favor insira um texto válido para procurar.");
             return;
         }
-        WordSearchMessage message = new WordSearchMessage(search);
-        node.writeMessage(message);
+        WordSearchMessage message = new WordSearchMessage(search, node.getPort());
+        node.sendMessage(message);
     }
 
     public void connectToNodeDialog() {
@@ -109,6 +109,11 @@ public class IscTorrent {
             JOptionPane.showMessageDialog(frame,
                     "Por favor selecione um ficheiro para descarregar.");
         }
+    }
+
+    public void removeConnection(int port) {
+        node.removeConnection(port);
+        JOptionPane.showMessageDialog(frame, "Ligação ao nó " + port + " removida.");
     }
 
     public static void main(String[] args) {

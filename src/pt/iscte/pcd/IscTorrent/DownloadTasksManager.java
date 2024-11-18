@@ -1,5 +1,7 @@
 package pt.iscte.pcd.IscTorrent;
 
-public class DownloadTasksManager {
+import java.io.Serializable;
 
+public class DownloadTasksManager implements Serializable {
+	private int originPort;
 }

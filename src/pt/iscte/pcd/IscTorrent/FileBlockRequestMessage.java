@@ -1,6 +1,8 @@
 package pt.iscte.pcd.IscTorrent;
 
-public class FileBlockRequestMessage {
+import java.io.Serializable;
+
+public class FileBlockRequestMessage implements Serializable {
     private String hash;
     private int blockIndex;
     private int blockSize;

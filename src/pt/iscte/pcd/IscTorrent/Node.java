@@ -16,10 +16,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 public class Node {
-    private Map<Integer, File> files;
+    private Map<Integer, File> files = new HashMap<>();
     private ServerSocket serverSocket;
     private int port;
-    private List<ConnectionHandler> connections = new ArrayList<>();
+    private Map<Integer, ConnectionHandler> connections = new HashMap<Integer, ConnectionHandler>();
 
     public Node(String path, int port) {
         this.port = port;
@@ -38,8 +38,12 @@ public class Node {
         return files;
     }
 
-    public List<ConnectionHandler> getConnections() {
+    public Map<Integer, ConnectionHandler> getConnections() {
         return connections;
+    }
+
+    public int getPort() {
+        return port;
     }
 
     public void runServer() {
@@ -61,30 +65,52 @@ public class Node {
     }
 
     public void readSearchRequest(WordSearchMessage message) {
-        WordSearchMessage wordSearchMessage = (WordSearchMessage) message;
+        List<FileSearchResult> result = new ArrayList<>();
         for (Entry<Integer, File> entry : files.entrySet()) {
-            if (entry.getValue().getName().contains(wordSearchMessage.getWord())) {
-                List<FileSearchResult> result = new ArrayList<>();
-                result.add(new FileSearchResult(wordSearchMessage, entry.getKey(),
-                        (int) entry.getValue().length(), entry.getValue().getName(), "localhost", port));
-                writeMessage(result);
+            if (entry.getValue().getName().contains(message.getWord())) {
+                result.add(new FileSearchResult(message, entry.getKey(),
+                        (int) entry.getValue().length(), entry.getValue().getName(), port));
+                sendMessage(message.getOriginPort(), result);
             }
+        }
+    }
+
+    public void sendMessage(int port, Object message) {
+        ConnectionHandler connection = connections.get(port);
+        if (connection == null)
+            throw new IllegalArgumentException("Connection to port " + port + " not found");
+        connection.writeMessage(message);
+    }
+
+    /**
+     * Sends a message to all connected nodes
+     * 
+     * @param message The object to send
+     */
+    public void sendMessage(Object message) {
+        for (ConnectionHandler connection : connections.values()) {
+            connection.writeMessage(message);
         }
     }
 
     private void waitForConnection() throws IOException {
         Socket connection = serverSocket.accept();
         ConnectionHandler handler = new ConnectionHandler(connection);
-        connections.add(handler);
+        // TODO set port after receiving connection request
+        connections.put(connection.getPort(), handler);
         handler.start();
         System.out.println("Connection to " + connection.getLocalPort() + " - ready!");
     }
 
     public void connectToNode(String ip, int port) throws IOException {
         Socket connection = new Socket(ip, port);
-        ConnectionHandler handler = new ConnectionHandler(connection);
-        connections.add(handler);
+        ConnectionHandler handler = new ConnectionHandler(connection, port);
+        connections.put(port, handler);
         handler.start();
-        System.out.println("Connection to " + port + " - ready!");
+        System.out.println("Connection to " + connection.getPort() + " - ready!");
+    }
+
+    public void removeConnection(int port) {
+        connections.remove(port);
     }
 }

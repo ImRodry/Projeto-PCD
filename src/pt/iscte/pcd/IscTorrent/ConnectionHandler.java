@@ -4,14 +4,29 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 
 public class ConnectionHandler extends Thread {
 	private Socket connection;
 	private ObjectOutputStream out;
 	private ObjectInputStream in;
+	private int port;
 
 	public ConnectionHandler(Socket connection) {
 		this.connection = connection;
+	}
+
+	public ConnectionHandler(Socket connection, int port) {
+		this.connection = connection;
+		this.port = port;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
 	}
 
 	@Override
@@ -41,6 +56,8 @@ public class ConnectionHandler extends Thread {
 					IscTorrent.getInstance().getNode().readSearchRequest((WordSearchMessage) message);
 				}
 			} catch (ClassNotFoundException | IOException e) {
+				if (e instanceof SocketException)
+					IscTorrent.getInstance().removeConnection(port);
 				e.printStackTrace();
 				break;
 			}
@@ -48,13 +65,13 @@ public class ConnectionHandler extends Thread {
 	}
 
 	public void writeMessage(Object message) {
-        try {
-            out.writeObject(message);
-            out.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+		try {
+			out.writeObject(message);
+			out.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	private void closeConnection() {
 		try {

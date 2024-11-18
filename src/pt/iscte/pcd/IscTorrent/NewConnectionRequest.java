@@ -1,17 +1,14 @@
 package pt.iscte.pcd.IscTorrent;
 
-public class NewConnectionRequest {
-    private String ip;
+import java.io.Serializable;
+
+public class NewConnectionRequest implements Serializable {
     private int port;
     private Node node;
 
-    public NewConnectionRequest(String ip, int port) {
-        this.ip = ip;
+    public NewConnectionRequest(int port, Node node) {
         this.port = port;
-    }
-
-    public String getIp() {
-        return ip;
+        this.node = node;
     }
 
     public int getPort() {
