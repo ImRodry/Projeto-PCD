@@ -72,15 +72,17 @@ public class Node {
         }
     }
 
-    public void readSearchRequest(WordSearchMessage message) {
+    public List<FileSearchResult> readSearchRequest(WordSearchMessage message) {
         List<FileSearchResult> result = new ArrayList<>();
         for (Entry<Integer, File> entry : files.entrySet()) {
             if (entry.getValue().getName().contains(message.getWord())) {
                 result.add(new FileSearchResult(message, entry.getKey(),
                         (int) entry.getValue().length(), entry.getValue().getName(), port));
-                sendMessage(message.getOriginPort(), result);
             }
         }
+        if (result.isEmpty())
+            return null;
+        return result;
     }
 
     public void sendMessage(int port, Object message) {
@@ -112,12 +114,15 @@ public class Node {
     public void connectToNode(String ip, int port) throws IOException {
         if (connections.containsKey(port)) {
             JOptionPane.showMessageDialog(gui, "A conexão para esse nó já está estabelecida.");
+            return;
+        } else if (port == this.port) {
+            JOptionPane.showMessageDialog(gui, "Não é possível ligar a si mesmo.");
+            return;
         }
         Socket connection = new Socket(ip, port);
         ConnectionHandler handler = new ConnectionHandler(connection, this, port);
-        connections.put(port, handler);
         handler.start();
-        sendMessage(new NewConnectionRequest(port));
+        connections.put(port, handler);
         System.out.println("Connection to " + connection.getPort() + " - ready!");
     }
 

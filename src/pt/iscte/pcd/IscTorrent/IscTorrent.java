@@ -3,10 +3,13 @@ package pt.iscte.pcd.IscTorrent;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class IscTorrent extends JFrame {
     private Node node;
     DefaultListModel<String> resultsList;
+    HashMap<Integer, ArrayList<FileSearchResult>> fileSearchResults = new HashMap<>();
 
     private IscTorrent(String path, int port) {
         super("IscTorrent [path=" + path + ", ip=localhost: " + port + "]");
@@ -61,6 +64,10 @@ public class IscTorrent extends JFrame {
             JOptionPane.showMessageDialog(this, "Por favor insira um texto válido para procurar.");
             return;
         }
+        // Clear both the map and the list to delete the old results and not display
+        // outdated data in case no results are found
+        fileSearchResults.clear();
+        resultsList.clear();
         WordSearchMessage message = new WordSearchMessage(search, node.getPort());
         node.sendMessage(message);
     }
@@ -83,6 +90,19 @@ public class IscTorrent extends JFrame {
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, "Erro ao ligar ao nó.");
             }
+        }
+    }
+
+    synchronized public void updateSearchResults(ArrayList<FileSearchResult> results) {
+        // Clear the list to print everything with updated values
+        resultsList.clear();
+        for (FileSearchResult result : results) {
+            fileSearchResults.computeIfAbsent(result.getHash(), k -> new ArrayList<>()).add(result);
+        }
+        System.out.println(fileSearchResults);
+        for (ArrayList<FileSearchResult> result : fileSearchResults.values()) {
+            FileSearchResult first = result.getFirst();
+            resultsList.addElement(first.getFileName() + " <" + result.size() + ">");
         }
     }
 

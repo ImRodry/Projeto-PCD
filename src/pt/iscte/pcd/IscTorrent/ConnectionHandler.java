@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
 
 public class ConnectionHandler extends Thread {
 	private Socket connection;
@@ -36,6 +37,8 @@ public class ConnectionHandler extends Thread {
 	public void run() {
 		try {
 			getStreams();
+			if (port != 0)
+				writeMessage(new NewConnectionRequest(node.getPort()));
 			processConnection();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -51,22 +54,29 @@ public class ConnectionHandler extends Thread {
 		System.out.println("Streams ready!");
 	}
 
+	@SuppressWarnings("unchecked")
 	private void processConnection() {
 		while (true) {
 			try {
 				Object message = in.readObject();
+				Object answer = null;
 				if (message instanceof NewConnectionRequest) {
 					port = ((NewConnectionRequest) message).getPort();
 					node.addConnectionParent(port, this);
 					System.out.println("Connection to " + port + " - ready!");
-					System.out.println(node.getConnections());
+				} else if (message instanceof WordSearchMessage) {
+					answer = node.readSearchRequest((WordSearchMessage) message);
+				} else if (message instanceof ArrayList
+						&& ((ArrayList<FileSearchResult>) message).getFirst() instanceof FileSearchResult) {
+					node.getGui().updateSearchResults((ArrayList<FileSearchResult>) message);
 				}
-				if (message instanceof WordSearchMessage) {
-					node.readSearchRequest((WordSearchMessage) message);
-				}
+				if (answer != null)
+					writeMessage(answer);
 			} catch (ClassNotFoundException | IOException e) {
-				if (e instanceof SocketException)
+				if (e instanceof SocketException) {
 					node.getGui().removeConnection(port);
+					return;
+				}
 				e.printStackTrace();
 				break;
 			}
