@@ -13,16 +13,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
+
+import javax.swing.JOptionPane;
 
 public class Node {
     private Map<Integer, File> files = new HashMap<>();
     private ServerSocket serverSocket;
     private int port;
+    private ArrayList<ConnectionHandler> orphanConnections = new ArrayList<>();
     private Map<Integer, ConnectionHandler> connections = new HashMap<Integer, ConnectionHandler>();
+    private IscTorrent gui;
 
-    public Node(String path, int port) {
+    public Node(String path, int port, IscTorrent gui) {
         this.port = port;
+        this.gui = gui;
         for (File f : new File(path).listFiles((File file) -> file.isFile())) {
             try {
                 byte[] fileContents = Files.readAllBytes(f.toPath());
@@ -44,6 +48,10 @@ public class Node {
 
     public int getPort() {
         return port;
+    }
+
+    public IscTorrent getGui() {
+        return gui;
     }
 
     public void runServer() {
@@ -95,22 +103,37 @@ public class Node {
 
     private void waitForConnection() throws IOException {
         Socket connection = serverSocket.accept();
-        ConnectionHandler handler = new ConnectionHandler(connection);
-        // TODO set port after receiving connection request
-        connections.put(connection.getPort(), handler);
+        ConnectionHandler handler = new ConnectionHandler(connection, this);
+        orphanConnections.add(handler);
         handler.start();
-        System.out.println("Connection to " + connection.getLocalPort() + " - ready!");
+        System.out.println("Received connection, waiting for NewConnectionRequest");
     }
 
     public void connectToNode(String ip, int port) throws IOException {
+        if (connections.containsKey(port)) {
+            JOptionPane.showMessageDialog(gui, "A conexão para esse nó já está estabelecida.");
+        }
         Socket connection = new Socket(ip, port);
-        ConnectionHandler handler = new ConnectionHandler(connection, port);
+        ConnectionHandler handler = new ConnectionHandler(connection, this, port);
         connections.put(port, handler);
         handler.start();
+        sendMessage(new NewConnectionRequest(port));
         System.out.println("Connection to " + connection.getPort() + " - ready!");
+    }
+
+    public void addConnectionParent(int port, ConnectionHandler handler) {
+        if (orphanConnections.remove(handler))
+            connections.put(port, handler);
+        else
+            throw new IllegalArgumentException("Connection not found in orphanConnections");
     }
 
     public void removeConnection(int port) {
         connections.remove(port);
+    }
+
+    @Override
+    public String toString() {
+        return "Node [serverSocket=" + serverSocket + ", port=" + port + "]";
     }
 }

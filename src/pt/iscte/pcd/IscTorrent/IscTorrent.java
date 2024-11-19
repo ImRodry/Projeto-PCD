@@ -4,33 +4,20 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
-public class IscTorrent {
-    private static IscTorrent INSTANCE;
-    private JFrame frame;
+public class IscTorrent extends JFrame {
     private Node node;
     DefaultListModel<String> resultsList;
 
     private IscTorrent(String path, int port) {
-        frame = new JFrame("IscTorrent [path=" + path + ", ip=localhost: " + port + "]");
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        super("IscTorrent [path=" + path + ", ip=localhost: " + port + "]");
+        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-        frame.setSize(dimension.width / 2, dimension.height / 2);
-        frame.setLocationRelativeTo(null);
+        this.setSize(dimension.width / 2, dimension.height / 2);
+        this.setLocationRelativeTo(null);
         addFrameContent();
 
-        node = new Node(path, port);
+        node = new Node(path, port, this);
         node.runServer();
-    }
-
-    public static IscTorrent getInstance(String path, int port) {
-        if (INSTANCE == null) {
-            INSTANCE = new IscTorrent(path, port);
-        }
-        return INSTANCE;
-    }
-
-    public static IscTorrent getInstance() {
-        return INSTANCE;
     }
 
     public Node getNode() {
@@ -38,7 +25,7 @@ public class IscTorrent {
     }
 
     public void addFrameContent() {
-        frame.setLayout(new BorderLayout());
+        this.setLayout(new BorderLayout());
 
         JLabel searchText = new JLabel("Texto a procurar:");
         JTextField searchField = new JTextField(30);
@@ -58,20 +45,20 @@ public class IscTorrent {
         buttonsPanel.add(downloadButton);
         buttonsPanel.add(makeConnection);
 
-        frame.add(searchPanel, BorderLayout.NORTH);
-        frame.add(listPane, BorderLayout.CENTER);
-        frame.add(buttonsPanel, BorderLayout.EAST);
+        this.add(searchPanel, BorderLayout.NORTH);
+        this.add(listPane, BorderLayout.CENTER);
+        this.add(buttonsPanel, BorderLayout.EAST);
 
         searchButton.addActionListener((ActionEvent e) -> searchFiles(searchField.getText()));
         makeConnection.addActionListener((ActionEvent e) -> connectToNodeDialog());
         downloadButton.addActionListener((ActionEvent e) -> downloadSelectedFile(list.getSelectedValue()));
 
-        frame.setVisible(true);
+        this.setVisible(true);
     }
 
     public void searchFiles(String search) {
         if (search == null || search.isEmpty()) {
-            JOptionPane.showMessageDialog(frame, "Por favor insira um texto válido para procurar.");
+            JOptionPane.showMessageDialog(this, "Por favor insira um texto válido para procurar.");
             return;
         }
         WordSearchMessage message = new WordSearchMessage(search, node.getPort());
@@ -92,9 +79,9 @@ public class IscTorrent {
             String port = portField.getText();
             try {
                 node.connectToNode(ip, Integer.parseInt(port));
-                JOptionPane.showMessageDialog(frame, "Ligado ao endereço: " + ip + " Porta: " + port);
+                JOptionPane.showMessageDialog(this, "Ligado ao endereço: " + ip + " Porta: " + port);
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(frame, "Erro ao ligar ao nó.");
+                JOptionPane.showMessageDialog(this, "Erro ao ligar ao nó.");
             }
         }
     }
@@ -103,21 +90,21 @@ public class IscTorrent {
         if (file != null) {
             // TODO download file
             // TODO time taken and who provided the file
-            JOptionPane.showMessageDialog(frame,
+            JOptionPane.showMessageDialog(this,
                     "");
         } else {
-            JOptionPane.showMessageDialog(frame,
+            JOptionPane.showMessageDialog(this,
                     "Por favor selecione um ficheiro para descarregar.");
         }
     }
 
     public void removeConnection(int port) {
         node.removeConnection(port);
-        JOptionPane.showMessageDialog(frame, "Ligação ao nó " + port + " removida.");
+        JOptionPane.showMessageDialog(this, "Ligação ao nó " + port + " removida.");
     }
 
     public static void main(String[] args) {
         @SuppressWarnings("unused")
-        IscTorrent iscTorrent = getInstance(args[0], Integer.parseInt(args[1]));
+        IscTorrent iscTorrent = new IscTorrent(args[0], Integer.parseInt(args[1]));
     }
 }

@@ -11,13 +11,16 @@ public class ConnectionHandler extends Thread {
 	private ObjectOutputStream out;
 	private ObjectInputStream in;
 	private int port;
+	private Node node;
 
-	public ConnectionHandler(Socket connection) {
+	public ConnectionHandler(Socket connection, Node node) {
 		this.connection = connection;
+		this.node = node;
 	}
 
-	public ConnectionHandler(Socket connection, int port) {
+	public ConnectionHandler(Socket connection, Node node, int port) {
 		this.connection = connection;
+		this.node = node;
 		this.port = port;
 	}
 
@@ -52,12 +55,18 @@ public class ConnectionHandler extends Thread {
 		while (true) {
 			try {
 				Object message = in.readObject();
+				if (message instanceof NewConnectionRequest) {
+					port = ((NewConnectionRequest) message).getPort();
+					node.addConnectionParent(port, this);
+					System.out.println("Connection to " + port + " - ready!");
+					System.out.println(node.getConnections());
+				}
 				if (message instanceof WordSearchMessage) {
-					IscTorrent.getInstance().getNode().readSearchRequest((WordSearchMessage) message);
+					node.readSearchRequest((WordSearchMessage) message);
 				}
 			} catch (ClassNotFoundException | IOException e) {
 				if (e instanceof SocketException)
-					IscTorrent.getInstance().removeConnection(port);
+					node.getGui().removeConnection(port);
 				e.printStackTrace();
 				break;
 			}
@@ -84,5 +93,10 @@ public class ConnectionHandler extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "ConnectionHandler [connection=" + connection + ", port=" + port + ", node=" + node + "]";
 	}
 }
