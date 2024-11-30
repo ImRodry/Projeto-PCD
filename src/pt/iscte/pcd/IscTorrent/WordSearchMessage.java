@@ -3,16 +3,16 @@ package pt.iscte.pcd.IscTorrent;
 import java.io.Serializable;
 
 public class WordSearchMessage implements Serializable {
-    private String word;
+    private String searchString;
     private int originPort;
 
-    public WordSearchMessage(String word, int originPort) {
-        this.word = word;
+    public WordSearchMessage(String searchString, int originPort) {
+        this.searchString = searchString;
         this.originPort = originPort;
     }
 
-    public String getWord() {
-        return word;
+    public String getSearchString() {
+        return searchString;
     }
 
     public int getOriginPort() {

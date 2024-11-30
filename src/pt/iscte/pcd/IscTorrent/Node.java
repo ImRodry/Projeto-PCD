@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.swing.JOptionPane;
 
@@ -20,13 +22,21 @@ public class Node {
     private Map<Integer, File> files = new HashMap<>();
     private ServerSocket serverSocket;
     private int port;
+    private String path;
     private ArrayList<ConnectionHandler> orphanConnections = new ArrayList<>();
     private Map<Integer, ConnectionHandler> connections = new HashMap<Integer, ConnectionHandler>();
     private IscTorrent gui;
+    private DownloadTasksManager downloadTasksManager = new DownloadTasksManager(this);
+    private ExecutorService downloadThreads = Executors.newFixedThreadPool(5);
 
     public Node(String path, int port, IscTorrent gui) {
+        this.path = path;
         this.port = port;
         this.gui = gui;
+        readFiles();
+    }
+
+    private void readFiles() {
         for (File f : new File(path).listFiles((File file) -> file.isFile())) {
             try {
                 byte[] fileContents = Files.readAllBytes(f.toPath());
@@ -44,6 +54,14 @@ public class Node {
 
     public Map<Integer, ConnectionHandler> getConnections() {
         return connections;
+    }
+
+    public ConnectionHandler getConnection(int port) {
+        return connections.get(port);
+    }
+
+    public String getPath() {
+        return path;
     }
 
     public int getPort() {
@@ -75,7 +93,7 @@ public class Node {
     public List<FileSearchResult> readSearchRequest(WordSearchMessage message) {
         List<FileSearchResult> result = new ArrayList<>();
         for (Entry<Integer, File> entry : files.entrySet()) {
-            if (entry.getValue().getName().contains(message.getWord())) {
+            if (entry.getValue().getName().contains(message.getSearchString())) {
                 result.add(new FileSearchResult(message, entry.getKey(),
                         (int) entry.getValue().length(), entry.getValue().getName(), port));
             }
@@ -83,6 +101,31 @@ public class Node {
         if (result.isEmpty())
             return null;
         return result;
+    }
+
+    public FileBlockAnswerMessage readBlockRequest(FileBlockRequestMessage message) throws IOException {
+        File file = files.get(message.getHash());
+        byte[] fileContents = Files.readAllBytes(file.toPath());
+        // Get either the requested block size or the available bytes
+        int length = Math.min(message.getBlockSize(), fileContents.length - message.getBlockIndex());
+        byte[] block = new byte[length];
+        System.arraycopy(fileContents, message.getBlockIndex(), block, 0, length);
+        return new FileBlockAnswerMessage(port, block, message.getBlockIndex(), message.getHash());
+    }
+
+    public void executeInThreadPool(Runnable task) {
+        downloadThreads.execute(task);
+    }
+
+    public void submitBlockAnswer(FileBlockAnswerMessage message) {
+        downloadTasksManager.submitBlockAnswer(message);
+    }
+
+    public boolean download(int hash, int fileSize, String fileName, List<Integer> nodePorts) {
+        boolean success = downloadTasksManager.download(hash, fileSize, fileName, nodePorts);
+        if (success)
+            readFiles();
+        return success;
     }
 
     public void sendMessage(int port, Object message) {
