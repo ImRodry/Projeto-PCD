@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 public class ConnectionHandler extends Thread {
 	private Socket connection;
@@ -13,6 +14,7 @@ public class ConnectionHandler extends Thread {
 	private ObjectInputStream in;
 	private int port;
 	private Node node;
+	private CountDownLatch downloadLatch;
 
 	public ConnectionHandler(Socket connection, Node node) {
 		this.connection = connection;
@@ -69,6 +71,21 @@ public class ConnectionHandler extends Thread {
 				} else if (message instanceof ArrayList
 						&& ((ArrayList<FileSearchResult>) message).getFirst() instanceof FileSearchResult) {
 					node.getGui().updateSearchResults((ArrayList<FileSearchResult>) message);
+				} else if (message instanceof FileBlockRequestMessage) {
+					node.executeInThreadPool(() -> {
+						try {
+							FileBlockAnswerMessage block = node.readBlockRequest((FileBlockRequestMessage) message);
+							writeMessage(block);
+						} catch (IOException e) {
+							e.printStackTrace();
+							writeMessage(new FileBlockAnswerMessage(node.getPort(), null,
+									((FileBlockAnswerMessage) message).getIndex(),
+									((FileSearchResult) message).getHash()));
+						}
+					});
+				} else if (message instanceof FileBlockAnswerMessage) {
+					node.submitBlockAnswer((FileBlockAnswerMessage) message);
+					downloadLatch.countDown();
 				}
 				if (answer != null)
 					writeMessage(answer);
@@ -88,6 +105,15 @@ public class ConnectionHandler extends Thread {
 			out.writeObject(message);
 			out.flush();
 		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void getLatchAndAwait() {
+		downloadLatch = new CountDownLatch(1);
+		try {
+			downloadLatch.await();
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}

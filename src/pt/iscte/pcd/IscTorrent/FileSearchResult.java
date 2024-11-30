@@ -7,14 +7,15 @@ public class FileSearchResult implements Serializable {
     private int hash;
     private int fileSize;
     private String fileName;
-    private int port;
+    private int originPort;
 
-    public FileSearchResult(WordSearchMessage wordSearchMessage, int hash, int fileSize, String fileName, int port) {
+    public FileSearchResult(WordSearchMessage wordSearchMessage, int hash, int fileSize, String fileName,
+            int originPort) {
         this.wordSearchMessage = wordSearchMessage;
         this.hash = hash;
         this.fileSize = fileSize;
         this.fileName = fileName;
-        this.port = port;
+        this.originPort = originPort;
     }
 
     public WordSearchMessage getWordSearchMessage() {
@@ -33,8 +34,8 @@ public class FileSearchResult implements Serializable {
         return fileName;
     }
 
-    public int getPort() {
-        return port;
+    public int getOriginPort() {
+        return originPort;
     }
 
 }

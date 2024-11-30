@@ -5,10 +5,11 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 public class IscTorrent extends JFrame {
     private Node node;
-    DefaultListModel<String> resultsList;
+    DefaultListModel<ListFile> resultsList;
     HashMap<Integer, ArrayList<FileSearchResult>> fileSearchResults = new HashMap<>();
 
     private IscTorrent(String path, int port) {
@@ -39,7 +40,7 @@ public class IscTorrent extends JFrame {
         searchPanel.add(searchButton);
 
         resultsList = new DefaultListModel<>();
-        JList<String> list = new JList<>(resultsList);
+        JList<ListFile> list = new JList<>(resultsList);
         JScrollPane listPane = new JScrollPane(list);
 
         JButton downloadButton = new JButton("Descarregar");
@@ -99,22 +100,24 @@ public class IscTorrent extends JFrame {
         for (FileSearchResult result : results) {
             fileSearchResults.computeIfAbsent(result.getHash(), k -> new ArrayList<>()).add(result);
         }
-        System.out.println(fileSearchResults);
         for (ArrayList<FileSearchResult> result : fileSearchResults.values()) {
             FileSearchResult first = result.getFirst();
-            resultsList.addElement(first.getFileName() + " <" + result.size() + ">");
+            resultsList.addElement(new ListFile(first.getFileName(), result.size(), first.getHash()));
         }
     }
 
-    public void downloadSelectedFile(String file) {
-        if (file != null) {
-            // TODO download file
-            // TODO time taken and who provided the file
-            JOptionPane.showMessageDialog(this,
-                    "");
+    public void downloadSelectedFile(ListFile file) {
+        if (file == null) {
+            JOptionPane.showMessageDialog(this, "Por favor selecione um ficheiro para descarregar.");
+            return;
+        }
+        ArrayList<FileSearchResult> searchResults = fileSearchResults.get(file.getHash());
+        FileSearchResult first = searchResults.getFirst();
+        if (node.download(first.getHash(), first.getFileSize(), first.getFileName(),
+                searchResults.stream().map(FileSearchResult::getOriginPort).collect(Collectors.toList()))) {
+            JOptionPane.showMessageDialog(this, "Ficheiro descarregado com sucesso.");
         } else {
-            JOptionPane.showMessageDialog(this,
-                    "Por favor selecione um ficheiro para descarregar.");
+            JOptionPane.showMessageDialog(this, "Erro ao descarregar o ficheiro.");
         }
     }
 
