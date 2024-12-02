@@ -27,7 +27,7 @@ public class DownloadTasksManager implements Serializable {
 			downloadTasks.get(message.getHash()).addBytes(message);
 	}
 
-	public boolean download(int hash, int fileSize, String fileName, List<Integer> nodePorts) {
+	public boolean download(int hash, long fileSize, String fileName, List<Integer> nodePorts) {
 		int poolSize = nodePorts.size();
 		ExecutorService threads = Executors.newFixedThreadPool(poolSize);
 

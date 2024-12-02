@@ -4,24 +4,24 @@ import java.io.Serializable;
 
 public class FileBlockRequestMessage implements Serializable {
     private int hash;
-    private int blockIndex;
-    private int blockSize;
+    private int offset;
+    private int length;
 
-    public FileBlockRequestMessage(int hash, int blockIndex, int blockSize) {
+    public FileBlockRequestMessage(int hash, int offset, int length) {
         this.hash = hash;
-        this.blockIndex = blockIndex;
-        this.blockSize = blockSize;
+        this.offset = offset;
+        this.length = length;
     }
 
     public int getHash() {
         return hash;
     }
 
-    public int getBlockIndex() {
-        return blockIndex;
+    public int getOffset() {
+        return offset;
     }
 
-    public int getBlockSize() {
-        return blockSize;
+    public int getLength() {
+        return length;
     }
 }

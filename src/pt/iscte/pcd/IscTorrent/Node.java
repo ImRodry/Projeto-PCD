@@ -95,7 +95,7 @@ public class Node {
         for (Entry<Integer, File> entry : files.entrySet()) {
             if (entry.getValue().getName().contains(message.getSearchString())) {
                 result.add(new FileSearchResult(message, entry.getKey(),
-                        (int) entry.getValue().length(), entry.getValue().getName(), port));
+                        entry.getValue().length(), entry.getValue().getName(), "localhost", port));
             }
         }
         if (result.isEmpty())
@@ -107,10 +107,10 @@ public class Node {
         File file = files.get(message.getHash());
         byte[] fileContents = Files.readAllBytes(file.toPath());
         // Get either the requested block size or the available bytes
-        int length = Math.min(message.getBlockSize(), fileContents.length - message.getBlockIndex());
+        int length = Math.min(message.getLength(), fileContents.length - message.getOffset());
         byte[] block = new byte[length];
-        System.arraycopy(fileContents, message.getBlockIndex(), block, 0, length);
-        return new FileBlockAnswerMessage(port, block, message.getBlockIndex(), message.getHash());
+        System.arraycopy(fileContents, message.getOffset(), block, 0, length);
+        return new FileBlockAnswerMessage(port, block, message.getOffset(), message.getHash());
     }
 
     public void executeInThreadPool(Runnable task) {
@@ -121,7 +121,7 @@ public class Node {
         downloadTasksManager.submitBlockAnswer(message);
     }
 
-    public boolean download(int hash, int fileSize, String fileName, List<Integer> nodePorts) {
+    public boolean download(int hash, long fileSize, String fileName, List<Integer> nodePorts) {
         boolean success = downloadTasksManager.download(hash, fileSize, fileName, nodePorts);
         if (success)
             readFiles();
