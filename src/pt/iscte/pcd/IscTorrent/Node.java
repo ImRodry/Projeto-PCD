@@ -170,9 +170,10 @@ public class Node {
     }
 
     public void addConnectionParent(int port, ConnectionHandler handler) {
-        if (orphanConnections.remove(handler))
+        if (orphanConnections.remove(handler)) {
             connections.put(port, handler);
-        else
+            JOptionPane.showMessageDialog(gui, "Recebida ligação do nó " + port);
+        } else
             throw new IllegalArgumentException("Connection not found in orphanConnections");
     }
 
