@@ -69,7 +69,7 @@ public class IscTorrent extends JFrame {
         // outdated data in case no results are found
         fileSearchResults.clear();
         resultsList.clear();
-        WordSearchMessage message = new WordSearchMessage(search, node.getPort());
+        WordSearchMessage message = new WordSearchMessage(search);
         node.sendMessage(message);
     }
 
