@@ -113,12 +113,14 @@ public class IscTorrent extends JFrame {
         }
         ArrayList<FileSearchResult> searchResults = fileSearchResults.get(file.getHash());
         FileSearchResult first = searchResults.getFirst();
-        if (node.download(first.getHash(), first.getFileSize(), first.getFileName(),
-                searchResults.stream().map(FileSearchResult::getOriginPort).collect(Collectors.toList()))) {
-            JOptionPane.showMessageDialog(this, "Ficheiro descarregado com sucesso.");
-        } else {
-            JOptionPane.showMessageDialog(this, "Erro ao descarregar o ficheiro.");
-        }
+        new Thread(() -> {
+            if (node.download(first.getHash(), first.getFileSize(), first.getFileName(),
+                    searchResults.stream().map(FileSearchResult::getOriginPort).collect(Collectors.toList()))) {
+                JOptionPane.showMessageDialog(this, "Ficheiro descarregado com sucesso.");
+            } else {
+                JOptionPane.showMessageDialog(this, "Erro ao descarregar o ficheiro.");
+            }
+        }).start();
     }
 
     public void removeConnection(int port) {
