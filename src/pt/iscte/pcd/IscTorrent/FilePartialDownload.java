@@ -5,6 +5,7 @@ import java.util.HashMap;
 public class FilePartialDownload {
 	private String fileName;
 	private HashMap<Integer, byte[]> fileBlocks = new HashMap<>();
+	private HashMap<Integer, Integer> blocksPerPort = new HashMap<>();
 
 	public FilePartialDownload(String fileName) {
 		this.fileName = fileName;
@@ -13,9 +14,14 @@ public class FilePartialDownload {
 	public String getFileName() {
 		return fileName;
 	}
+	
+	public HashMap<Integer, Integer> getBlocksPerPort() {
+		return blocksPerPort;
+	}
 
 	synchronized public void addBytes(FileBlockAnswerMessage message) {
 		fileBlocks.put(message.getIndex(), message.getBlock());
+		blocksPerPort.merge(message.getOriginPort(), 1, Integer::sum);
 	}
 
 	public byte[] getSortedFileContent() {

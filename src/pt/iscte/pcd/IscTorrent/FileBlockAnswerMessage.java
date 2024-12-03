@@ -6,6 +6,7 @@ public class FileBlockAnswerMessage implements Serializable {
 	private byte[] block;
 	private int index;
 	private int hash;
+	private int originPort;
 
 	public FileBlockAnswerMessage(int originPort, byte[] block, int index, int hash) {
 		this.block = block;
@@ -23,5 +24,9 @@ public class FileBlockAnswerMessage implements Serializable {
 
 	public int getHash() {
 		return hash;
+	}
+
+	public int getOriginPort() {
+		return originPort;
 	}
 }
