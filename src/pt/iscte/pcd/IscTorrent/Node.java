@@ -2,6 +2,7 @@ package pt.iscte.pcd.IscTorrent;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -72,6 +73,10 @@ public class Node {
         return gui;
     }
 
+    public DownloadTasksManager getDownloadTasksManager() {
+        return downloadTasksManager;
+    }
+
     public void runServer() {
         try {
             serverSocket = new ServerSocket(port);
@@ -105,12 +110,18 @@ public class Node {
 
     public FileBlockAnswerMessage readBlockRequest(FileBlockRequestMessage message) throws IOException {
         File file = files.get(message.getHash());
-        byte[] fileContents = Files.readAllBytes(file.toPath());
-        // Get either the requested block size or the available bytes
-        int length = Math.min(message.getLength(), fileContents.length - message.getOffset());
-        byte[] block = new byte[length];
-        System.arraycopy(fileContents, message.getOffset(), block, 0, length);
-        return new FileBlockAnswerMessage(port, block, message.getOffset(), message.getHash());
+        try (RandomAccessFile f = new RandomAccessFile(file, "r")) {
+            // Get either the requested block size or the available bytes
+            int length = (int) Math.min(message.getLength(), file.length() - message.getOffset());
+            byte[] block = new byte[length];
+
+            f.seek(message.getOffset()); // Move to the specified offset
+            f.readFully(block); // Read the specific number of bytes
+            return new FileBlockAnswerMessage(port, block, message.getOffset(), message.getHash());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new FileBlockAnswerMessage(port, null, message.getOffset(), message.getHash());
+        }
     }
 
     public void executeInThreadPool(Runnable task) {
@@ -154,19 +165,20 @@ public class Node {
         System.out.println("Received connection, waiting for NewConnectionRequest");
     }
 
-    public void connectToNode(String ip, int port) throws IOException {
+    public boolean connectToNode(String ip, int port) throws IOException {
         if (connections.containsKey(port)) {
             JOptionPane.showMessageDialog(gui, "A conexão para esse nó já está estabelecida.");
-            return;
+            return false;
         } else if (port == this.port) {
             JOptionPane.showMessageDialog(gui, "Não é possível ligar a si mesmo.");
-            return;
+            return false;
         }
         Socket connection = new Socket(ip, port);
         ConnectionHandler handler = new ConnectionHandler(connection, this, port);
         handler.start();
         connections.put(port, handler);
         System.out.println("Connection to " + connection.getPort() + " - ready!");
+        return true;
     }
 
     public void addConnectionParent(int port, ConnectionHandler handler) {

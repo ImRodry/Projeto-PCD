@@ -9,6 +9,7 @@ public class FileBlockAnswerMessage implements Serializable {
 	private int originPort;
 
 	public FileBlockAnswerMessage(int originPort, byte[] block, int index, int hash) {
+		this.originPort = originPort;
 		this.block = block;
 		this.index = index;
 		this.hash = hash;

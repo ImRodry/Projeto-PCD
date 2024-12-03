@@ -27,7 +27,7 @@ public class DownloadTasksManager implements Serializable {
 			downloadTasks.get(message.getHash()).addBytes(message);
 	}
 
-	public boolean download(int hash, long fileSize, String fileName, List<Integer> nodePorts) {
+	synchronized public boolean download(int hash, long fileSize, String fileName, List<Integer> nodePorts) {
 		int poolSize = nodePorts.size();
 		ExecutorService threads = Executors.newFixedThreadPool(poolSize);
 
@@ -54,7 +54,7 @@ public class DownloadTasksManager implements Serializable {
 		// At this point we know the download is complete
 		threads.shutdown();
 		try {
-			threads.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS);
+			threads.awaitTermination(300, java.util.concurrent.TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			return false;
@@ -70,6 +70,7 @@ public class DownloadTasksManager implements Serializable {
 	private void writeFile(FilePartialDownload file) {
 		try (FileOutputStream stream = new FileOutputStream(node.getPath() + "/" + file.getFileName())) {
 			stream.write(file.getSortedFileContent());
+			System.out.println(file.getResultString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -5,7 +5,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.stream.Collectors;
 
 public class IscTorrent extends JFrame {
     private Node node;
@@ -86,8 +85,8 @@ public class IscTorrent extends JFrame {
             String ip = ipField.getText();
             String port = portField.getText();
             try {
-                node.connectToNode(ip, Integer.parseInt(port));
-                JOptionPane.showMessageDialog(this, "Ligado ao endereço: " + ip + " Porta: " + port);
+                if (node.connectToNode(ip, Integer.parseInt(port)))
+                    JOptionPane.showMessageDialog(this, "Ligado ao endereço: " + ip + " Porta: " + port);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, "Erro ao ligar ao nó.");
             }
@@ -102,7 +101,9 @@ public class IscTorrent extends JFrame {
         }
         for (ArrayList<FileSearchResult> result : fileSearchResults.values()) {
             FileSearchResult first = result.getFirst();
-            resultsList.addElement(new ListFile(first.getFileName(), result.size(), first.getHash()));
+            resultsList.addElement(new ListFile(first.getFileName(),
+                    result.stream().map(FileSearchResult::getOriginPort).toList(), first.getHash(),
+                    first.getFileSize()));
         }
     }
 
@@ -111,11 +112,10 @@ public class IscTorrent extends JFrame {
             JOptionPane.showMessageDialog(this, "Por favor selecione um ficheiro para descarregar.");
             return;
         }
-        ArrayList<FileSearchResult> searchResults = fileSearchResults.get(file.getHash());
-        FileSearchResult first = searchResults.getFirst();
         new Thread(() -> {
-            if (node.download(first.getHash(), first.getFileSize(), first.getFileName(),
-                    searchResults.stream().map(FileSearchResult::getOriginPort).collect(Collectors.toList()))) {
+            long startTime = System.currentTimeMillis();
+            if (node.download(file.getHash(), file.getFileSize(), file.getName(), file.getNodePorts())) {
+                System.out.println("Download took: " + (System.currentTimeMillis() - startTime) + "ms");
                 JOptionPane.showMessageDialog(this, "Ficheiro descarregado com sucesso.");
             } else {
                 JOptionPane.showMessageDialog(this, "Erro ao descarregar o ficheiro.");

@@ -14,9 +14,11 @@ public class FilePartialDownload {
 	public String getFileName() {
 		return fileName;
 	}
-	
-	public HashMap<Integer, Integer> getBlocksPerPort() {
-		return blocksPerPort;
+
+	public String getResultString() {
+		return blocksPerPort.entrySet().stream()
+				.map(e -> "Fornecedor [endereço=localhost, porta=" + e.getKey() + "]: " + e.getValue())
+				.reduce("", (a, b) -> a + "\n" + b);
 	}
 
 	synchronized public void addBytes(FileBlockAnswerMessage message) {

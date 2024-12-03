@@ -6,9 +6,9 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 public class ConnectionHandler extends Thread {
 	private Socket connection;
@@ -67,7 +67,8 @@ public class ConnectionHandler extends Thread {
 					port = ((NewConnectionRequest) message).getPort();
 					node.addConnectionParent(port, this);
 					System.out.println("Connection to " + port + " - ready!");
-					JOptionPane.showMessageDialog(node.getGui(), "Recebida ligação do nó " + port);
+					SwingUtilities.invokeLater(
+							() -> JOptionPane.showMessageDialog(node.getGui(), "Recebida ligação do nó " + port));
 				} else if (message instanceof WordSearchMessage) {
 					writeMessage(node.readSearchRequest((WordSearchMessage) message));
 				} else if (message instanceof ArrayList

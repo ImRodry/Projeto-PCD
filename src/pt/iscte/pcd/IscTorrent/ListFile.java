@@ -1,30 +1,38 @@
 package pt.iscte.pcd.IscTorrent;
 
+import java.util.List;
+
 public class ListFile {
 	private String name;
-	private int nodeCount;
+	private List<Integer> nodePorts;
 	private int hash;
+	private long fileSize;
 
-	public ListFile(String name, int nodeCount, int hash) {
-		this.name = name;
-		this.nodeCount = nodeCount;
+	public ListFile(String fileName, List<Integer> nodePorts, int hash, long fileSize) {
+		this.name = fileName;
+		this.nodePorts = nodePorts;
 		this.hash = hash;
+		this.fileSize = fileSize;
 	}
 
 	public String getName() {
 		return name;
 	}
 
-	public int getNodeCount() {
-		return nodeCount;
+	public List<Integer> getNodePorts() {
+		return nodePorts;
 	}
 
 	public int getHash() {
 		return hash;
 	}
 
+	public long getFileSize() {
+		return fileSize;
+	}
+
 	@Override
 	public String toString() {
-		return name + " <" + nodeCount + ">";
+		return name + " <" + nodePorts.size() + ">";
 	}
 }
