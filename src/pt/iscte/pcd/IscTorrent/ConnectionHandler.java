@@ -61,21 +61,19 @@ public class ConnectionHandler extends Thread {
 		while (true) {
 			try {
 				Object message = in.readObject();
-				Object answer = null;
 				if (message instanceof NewConnectionRequest) {
 					port = ((NewConnectionRequest) message).getPort();
 					node.addConnectionParent(port, this);
 					System.out.println("Connection to " + port + " - ready!");
 				} else if (message instanceof WordSearchMessage) {
-					answer = node.readSearchRequest((WordSearchMessage) message);
+					writeMessage(node.readSearchRequest((WordSearchMessage) message));
 				} else if (message instanceof ArrayList
 						&& ((ArrayList<FileSearchResult>) message).getFirst() instanceof FileSearchResult) {
 					node.getGui().updateSearchResults((ArrayList<FileSearchResult>) message);
 				} else if (message instanceof FileBlockRequestMessage) {
 					node.executeInThreadPool(() -> {
 						try {
-							FileBlockAnswerMessage block = node.readBlockRequest((FileBlockRequestMessage) message);
-							writeMessage(block);
+							writeMessage(node.readBlockRequest((FileBlockRequestMessage) message));
 						} catch (IOException e) {
 							e.printStackTrace();
 							writeMessage(new FileBlockAnswerMessage(node.getPort(), null,
@@ -87,8 +85,6 @@ public class ConnectionHandler extends Thread {
 					node.submitBlockAnswer((FileBlockAnswerMessage) message);
 					downloadLatch.countDown();
 				}
-				if (answer != null)
-					writeMessage(answer);
 			} catch (ClassNotFoundException | IOException e) {
 				if (e instanceof SocketException) {
 					node.getGui().removeConnection(port);
