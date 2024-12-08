@@ -81,7 +81,7 @@ public class ConnectionHandler extends Thread {
 						} catch (IOException e) {
 							e.printStackTrace();
 							writeMessage(new FileBlockAnswerMessage(node.getPort(), null,
-									((FileBlockAnswerMessage) message).getIndex(),
+									((FileBlockAnswerMessage) message).getOffset(),
 									((FileSearchResult) message).getHash()));
 						}
 					});

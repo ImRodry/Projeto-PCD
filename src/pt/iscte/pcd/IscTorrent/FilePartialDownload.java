@@ -22,7 +22,7 @@ public class FilePartialDownload {
 	}
 
 	synchronized public void addBytes(FileBlockAnswerMessage message) {
-		fileBlocks.put(message.getIndex(), message.getBlock());
+		fileBlocks.put(message.getOffset(), message.getBlock());
 		blocksPerPort.merge(message.getOriginPort(), 1, Integer::sum);
 	}
 
