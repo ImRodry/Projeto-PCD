@@ -97,6 +97,9 @@ public class IscTorrent extends JFrame {
         // Clear the list to print everything with updated values
         resultsList.clear();
         for (FileSearchResult result : results) {
+            // Don't display files the node already has
+            if (node.getFiles().containsKey(result.getHash()))
+                continue;
             fileSearchResults.computeIfAbsent(result.getHash(), k -> new ArrayList<>()).add(result);
         }
         for (ArrayList<FileSearchResult> result : fileSearchResults.values()) {
