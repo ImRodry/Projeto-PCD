@@ -24,7 +24,6 @@ public class Node {
     private ServerSocket serverSocket;
     private int port;
     private String path;
-    private ArrayList<ConnectionHandler> orphanConnections = new ArrayList<>();
     private Map<Integer, ConnectionHandler> connections = new HashMap<Integer, ConnectionHandler>();
     private IscTorrent gui;
     private DownloadTasksManager downloadTasksManager = new DownloadTasksManager(this);
@@ -160,7 +159,6 @@ public class Node {
     private void waitForConnection() throws IOException {
         Socket connection = serverSocket.accept();
         ConnectionHandler handler = new ConnectionHandler(connection, this);
-        orphanConnections.add(handler);
         handler.start();
         System.out.println("Received connection, waiting for NewConnectionRequest");
     }
@@ -182,10 +180,7 @@ public class Node {
     }
 
     public void addConnectionParent(int port, ConnectionHandler handler) {
-        if (orphanConnections.remove(handler)) {
-            connections.put(port, handler);
-        } else
-            throw new IllegalArgumentException("Connection not found in orphanConnections");
+        connections.put(port, handler);
     }
 
     public void removeConnection(int port) {
