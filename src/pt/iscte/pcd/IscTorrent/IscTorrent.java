@@ -17,15 +17,19 @@ public class IscTorrent extends JFrame {
     DefaultListModel<ListFile> resultsList;
     HashMap<Integer, ArrayList<FileSearchResult>> fileSearchResults = new HashMap<>();
 
-    private IscTorrent(String path, int port) {
+    private IscTorrent(int port, String path) {
         super("IscTorrent [path=" + path + ", ip=localhost: " + port + "]");
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
         this.setSize(dimension.width / 2, dimension.height / 2);
         this.setLocationRelativeTo(null);
         addFrameContent();
-
-        node = new Node(path, port, this);
+        try {
+            node = new Node(path, port, this);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
         node.runServer();
     }
 
@@ -60,7 +64,7 @@ public class IscTorrent extends JFrame {
 
         searchButton.addActionListener((ActionEvent e) -> searchFiles(searchField.getText()));
         makeConnection.addActionListener((ActionEvent e) -> connectToNodeDialog());
-        downloadButton.addActionListener((ActionEvent e) -> downloadSelectedFile(list.getSelectedValuesList()));
+        downloadButton.addActionListener((ActionEvent e) -> downloadSelectedFiles(list.getSelectedValuesList()));
 
         this.setVisible(true);
     }
@@ -117,7 +121,7 @@ public class IscTorrent extends JFrame {
         }
     }
 
-    public void downloadSelectedFile(List<ListFile> files) {
+    public void downloadSelectedFiles(List<ListFile> files) {
         if (files.size() == 0) {
             JOptionPane.showMessageDialog(this, "Por favor selecione um ficheiro para descarregar.");
             return;
@@ -156,6 +160,6 @@ public class IscTorrent extends JFrame {
 
     public static void main(String[] args) {
         @SuppressWarnings("unused")
-        IscTorrent iscTorrent = new IscTorrent(args[0], Integer.parseInt(args[1]));
+        IscTorrent iscTorrent = new IscTorrent(Integer.parseInt(args[0]), args[1]);
     }
 }

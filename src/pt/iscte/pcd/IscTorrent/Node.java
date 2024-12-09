@@ -37,7 +37,10 @@ public class Node {
     }
 
     private void readFiles() {
-        for (File f : new File(path).listFiles((File file) -> file.isFile())) {
+        File[] rawFiles = new File(path).listFiles((File file) -> file.isFile());
+        if (rawFiles == null)
+            throw new IllegalArgumentException("Invalid path: " + path);
+        for (File f : rawFiles) {
             try {
                 byte[] fileContents = Files.readAllBytes(f.toPath());
                 byte[] hash = MessageDigest.getInstance("SHA-256").digest(fileContents);
