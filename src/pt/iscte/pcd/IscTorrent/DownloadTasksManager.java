@@ -19,7 +19,7 @@ public class DownloadTasksManager implements Serializable {
 		this.node = node;
 	}
 
-	synchronized public void submitBlockAnswer(FileBlockAnswerMessage message) {
+	public void submitBlockAnswer(FileBlockAnswerMessage message) {
 		// If a null block is received, something went wrong, so we remove the task
 		if (message.getBlock() == null)
 			downloadTasks.remove(message.getHash());
@@ -30,6 +30,7 @@ public class DownloadTasksManager implements Serializable {
 	synchronized public boolean download(int hash, long fileSize, String fileName, List<Integer> nodePorts) {
 		int poolSize = nodePorts.size();
 		ExecutorService threads = Executors.newFixedThreadPool(poolSize);
+		System.out.println("Downloading file with hash: " + hash);
 
 		HashMap<Integer, AtomicBoolean> nodeAvailability = new HashMap<>();
 		for (int port : nodePorts) {
@@ -45,7 +46,7 @@ public class DownloadTasksManager implements Serializable {
 					if (entry.getValue().compareAndSet(false, true)) {
 						ConnectionHandler connection = node.getConnection(entry.getKey());
 						connection.writeMessage(new FileBlockRequestMessage(hash, finalBlockIndex, MAX_BLOCK_SIZE));
-						connection.getLatchAndAwait();
+						connection.awaitLatchForDownload(hash);
 						entry.getValue().set(false);
 						break;
 					}

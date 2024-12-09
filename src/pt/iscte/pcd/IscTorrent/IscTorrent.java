@@ -3,7 +3,13 @@ package pt.iscte.pcd.IscTorrent;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import java.util.HashMap;
 
 public class IscTorrent extends JFrame {
@@ -54,7 +60,7 @@ public class IscTorrent extends JFrame {
 
         searchButton.addActionListener((ActionEvent e) -> searchFiles(searchField.getText()));
         makeConnection.addActionListener((ActionEvent e) -> connectToNodeDialog());
-        downloadButton.addActionListener((ActionEvent e) -> downloadSelectedFile(list.getSelectedValue()));
+        downloadButton.addActionListener((ActionEvent e) -> downloadSelectedFile(list.getSelectedValuesList()));
 
         this.setVisible(true);
     }
@@ -88,7 +94,7 @@ public class IscTorrent extends JFrame {
                 if (node.connectToNode(ip, Integer.parseInt(port)))
                     JOptionPane.showMessageDialog(this, "Ligado ao endereço: " + ip + " Porta: " + port);
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Erro ao ligar ao nó.");
+                JOptionPane.showMessageDialog(this, "Erro ao ligar ao nó: " + e.getMessage());
             }
         }
     }
@@ -110,25 +116,41 @@ public class IscTorrent extends JFrame {
         }
     }
 
-    public void downloadSelectedFile(ListFile file) {
-        if (file == null) {
+    public void downloadSelectedFile(List<ListFile> files) {
+        if (files.size() == 0) {
             JOptionPane.showMessageDialog(this, "Por favor selecione um ficheiro para descarregar.");
             return;
         }
-        new Thread(() -> {
-            long startTime = System.currentTimeMillis();
-            if (node.download(file.getHash(), file.getFileSize(), file.getName(), file.getNodePorts())) {
-                System.out.println("Download took: " + (System.currentTimeMillis() - startTime) + "ms");
-                JOptionPane.showMessageDialog(this, "Ficheiro descarregado com sucesso.");
-            } else {
-                JOptionPane.showMessageDialog(this, "Erro ao descarregar o ficheiro.");
-            }
-        }).start();
+        ExecutorService threads = Executors.newFixedThreadPool(files.size());
+        AtomicBoolean failed = new AtomicBoolean();
+        for (ListFile file : files) {
+            threads.submit(() -> {
+                long startTime = System.currentTimeMillis();
+                if (node.download(file.getHash(), file.getFileSize(), file.getName(), file.getNodePorts())) {
+                    System.out.println("Download took: " + (System.currentTimeMillis() - startTime) + "ms");
+                } else {
+                    System.out.println("Download failed for file " + file.getName() + " with hash: " + file.getHash());
+                    failed.set(true);
+                }
+                resultsList.clear(); // Clear the results as they are no longer valid
+            });
+        }
+        threads.shutdown();
+        try {
+            threads.awaitTermination(30, java.util.concurrent.TimeUnit.SECONDS);
+            if (failed.get())
+                throw new IOException("Some of the downloads failed");
+            JOptionPane.showMessageDialog(this, "Os seguintes ficheiros foram descarregados com sucesso:\n"
+                    + files.stream().map(ListFile::getName).collect(Collectors.joining(", ")));
+        } catch (InterruptedException | IOException e) {
+            JOptionPane.showMessageDialog(this, "Algo correu mal ao descarregar os ficheiros");
+        }
     }
 
     public void removeConnection(int port) {
         node.removeConnection(port);
-        JOptionPane.showMessageDialog(this, "Ligação ao nó " + port + " removida.");
+        SwingUtilities.invokeLater(
+                () -> JOptionPane.showMessageDialog(this, "Ligação ao nó " + port + " removida."));
     }
 
     public static void main(String[] args) {

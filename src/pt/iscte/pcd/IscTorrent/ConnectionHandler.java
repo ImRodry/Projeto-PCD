@@ -6,17 +6,19 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.HashMap;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 public class ConnectionHandler extends Thread {
 	private Socket connection;
-	private ObjectOutputStream out;
 	private ObjectInputStream in;
+	private ObjectOutputStream out;
 	private int port;
 	private Node node;
-	private CountDownLatch downloadLatch;
+	private HashMap<Integer, CountDownLatch> downloadLatches = new HashMap<>();
 
 	public ConnectionHandler(Socket connection, Node node) {
 		this.connection = connection;
@@ -87,7 +89,7 @@ public class ConnectionHandler extends Thread {
 					});
 				} else if (message instanceof FileBlockAnswerMessage) {
 					node.submitBlockAnswer((FileBlockAnswerMessage) message);
-					downloadLatch.countDown();
+					downloadLatches.remove(((FileBlockAnswerMessage) message).getHash()).countDown();
 				}
 			} catch (ClassNotFoundException | IOException e) {
 				if (e instanceof SocketException) {
@@ -109,8 +111,11 @@ public class ConnectionHandler extends Thread {
 		}
 	}
 
-	public void getLatchAndAwait() {
-		downloadLatch = new CountDownLatch(1);
+	public void awaitLatchForDownload(int hash) {
+		if (downloadLatches.containsKey(hash))
+			throw new IllegalStateException("Latch already exists for this hash");
+		CountDownLatch downloadLatch = new CountDownLatch(1);
+		downloadLatches.put(hash, downloadLatch);
 		try {
 			downloadLatch.await();
 		} catch (InterruptedException e) {
