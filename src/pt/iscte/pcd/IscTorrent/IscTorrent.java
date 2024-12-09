@@ -67,6 +67,7 @@ public class IscTorrent extends JFrame {
 
     public void searchFiles(String search) {
         if (search == null || search.isEmpty()) {
+            resultsList.clear();
             JOptionPane.showMessageDialog(this, "Por favor insira um texto válido para procurar.");
             return;
         }
@@ -141,7 +142,7 @@ public class IscTorrent extends JFrame {
             if (failed.get())
                 throw new IOException("Some of the downloads failed");
             JOptionPane.showMessageDialog(this, "Os seguintes ficheiros foram descarregados com sucesso:\n"
-                    + files.stream().map(ListFile::getName).collect(Collectors.joining(", ")));
+                    + files.stream().map(ListFile::getName).collect(Collectors.joining("\n")));
         } catch (InterruptedException | IOException e) {
             JOptionPane.showMessageDialog(this, "Algo correu mal ao descarregar os ficheiros");
         }
