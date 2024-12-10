@@ -99,14 +99,15 @@ public class ConnectionHandler extends Thread {
 						System.out.println("Latch not found for hash " + ((FileBlockAnswerMessage) message).getHash());
 				}
 			} catch (ClassNotFoundException | IOException e) {
-				// If any error happens, chances are the connection is broken forever, so might as well remove it
 				if (e instanceof SocketException)
 					System.out.println("Connection to " + port + " closed.");
-				else {
+				else
 					e.printStackTrace();
-					System.out.println("Ocorreu um erro na ligação à port " + port + ", esta será agora removida");
+
+				if (connection.isClosed()) {
+					System.out.println("Connection to " + port + " was closed, removing it.");
+					node.getGui().removeConnection(port);
 				}
-				// node.getGui().removeConnection(port);
 				for (CountDownLatch latch : downloadLatches.values())
 					latch.countDown();
 				break;

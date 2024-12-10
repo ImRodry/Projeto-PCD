@@ -72,9 +72,8 @@ public class DownloadTasksManager implements Serializable {
 				});
 			}
 		} catch (Exception e) {
-			System.out.println("Catchei " + e);
+			e.printStackTrace();
 		}
-		System.out.println("Fim dos pedidos");
 		// At this point we know the download is complete
 		threads.shutdown();
 		try {
@@ -93,7 +92,7 @@ public class DownloadTasksManager implements Serializable {
 		return true;
 	}
 
-	private void writeFile(FilePartialDownload file) {
+	synchronized private void writeFile(FilePartialDownload file) {
 		try (FileOutputStream stream = new FileOutputStream(node.getPath() + "/" + file.getFileName())) {
 			stream.write(file.getSortedFileContent());
 			System.out.println(file.getResultString());

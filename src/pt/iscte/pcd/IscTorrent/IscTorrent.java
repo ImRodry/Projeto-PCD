@@ -154,7 +154,7 @@ public class IscTorrent extends JFrame {
         }
         threads.shutdown();
         try {
-            if (!threads.awaitTermination(300, java.util.concurrent.TimeUnit.SECONDS) || failed.get())
+            if (!threads.awaitTermination(180, java.util.concurrent.TimeUnit.SECONDS) || failed.get())
                 throw new IOException("Some of the downloads failed");
             JOptionPane.showMessageDialog(this, "Os seguintes ficheiros foram descarregados com sucesso:\n"
                     + files.stream().map(ListFile::getName).collect(Collectors.joining("\n")));
