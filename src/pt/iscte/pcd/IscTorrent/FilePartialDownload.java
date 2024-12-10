@@ -4,11 +4,12 @@ import java.util.HashMap;
 
 public class FilePartialDownload {
 	private String fileName;
-	private HashMap<Integer, byte[]> fileBlocks = new HashMap<>();
 	private HashMap<Integer, Integer> blocksPerPort = new HashMap<>();
+	private byte[] fileContent;
 
-	public FilePartialDownload(String fileName) {
+	public FilePartialDownload(String fileName, long fileSize) {
 		this.fileName = fileName;
+		this.fileContent = new byte[(int) fileSize];
 	}
 
 	public String getFileName() {
@@ -22,18 +23,12 @@ public class FilePartialDownload {
 	}
 
 	synchronized public void addBytes(FileBlockAnswerMessage message) {
-		fileBlocks.put(message.getOffset(), message.getBlock());
+		System.arraycopy(message.getBlock(), 0, fileContent, message.getOffset(), message.getBlock().length);
 		blocksPerPort.merge(message.getOriginPort(), 1, Integer::sum);
 	}
 
 	public byte[] getSortedFileContent() {
-		return fileBlocks.entrySet().stream().sorted((a, b) -> a.getKey() - b.getKey()).map(e -> e.getValue())
-				.reduce(new byte[0], (acc, curr) -> {
-					byte[] result = new byte[acc.length + curr.length];
-					System.arraycopy(acc, 0, result, 0, acc.length);
-					System.arraycopy(curr, 0, result, acc.length, curr.length);
-					return result;
-				});
+		return fileContent;
 	}
 
 }

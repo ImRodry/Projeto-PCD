@@ -43,10 +43,12 @@ public class IscTorrent extends JFrame {
         JLabel searchText = new JLabel("Texto a procurar:");
         JTextField searchField = new JTextField(30);
         JButton searchButton = new JButton("Procurar");
+        JButton refreshButton = new JButton("Atualizar");
         JPanel searchPanel = new JPanel(new FlowLayout());
         searchPanel.add(searchText);
         searchPanel.add(searchField);
         searchPanel.add(searchButton);
+        searchPanel.add(refreshButton);
 
         resultsList = new DefaultListModel<>();
         JList<ListFile> list = new JList<>(resultsList);
@@ -65,6 +67,10 @@ public class IscTorrent extends JFrame {
         searchButton.addActionListener((ActionEvent e) -> searchFiles(searchField.getText()));
         makeConnection.addActionListener((ActionEvent e) -> connectToNodeDialog());
         downloadButton.addActionListener((ActionEvent e) -> downloadSelectedFiles(list.getSelectedValuesList()));
+        refreshButton.addActionListener((ActionEvent e) -> {
+            node.readFiles();
+            resultsList.clear();
+        });
 
         this.setVisible(true);
     }
@@ -80,7 +86,13 @@ public class IscTorrent extends JFrame {
         fileSearchResults.clear();
         resultsList.clear();
         WordSearchMessage message = new WordSearchMessage(search);
-        node.sendMessage(message);
+        try {
+            node.sendMessage(message);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Ocorreu um erro ao enviar a mensagem de pesquisa ao nó " + node.getPort());
+            e.printStackTrace();
+        }
     }
 
     public void connectToNodeDialog() {
@@ -142,8 +154,7 @@ public class IscTorrent extends JFrame {
         }
         threads.shutdown();
         try {
-            threads.awaitTermination(30, java.util.concurrent.TimeUnit.SECONDS);
-            if (failed.get())
+            if (!threads.awaitTermination(300, java.util.concurrent.TimeUnit.SECONDS) || failed.get())
                 throw new IOException("Some of the downloads failed");
             JOptionPane.showMessageDialog(this, "Os seguintes ficheiros foram descarregados com sucesso:\n"
                     + files.stream().map(ListFile::getName).collect(Collectors.joining("\n")));
@@ -159,7 +170,8 @@ public class IscTorrent extends JFrame {
     }
 
     public static void main(String[] args) {
+        int arg = Integer.parseInt(args[0]);
         @SuppressWarnings("unused")
-        IscTorrent iscTorrent = new IscTorrent(Integer.parseInt(args[0]), args[1]);
+        IscTorrent iscTorrent = new IscTorrent(8080 + arg, "dl" + arg);
     }
 }

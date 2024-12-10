@@ -76,50 +76,55 @@ public class ConnectionHandler extends Thread {
 						&& ((ArrayList<FileSearchResult>) message).getFirst() instanceof FileSearchResult) {
 					node.getGui().updateSearchResults((ArrayList<FileSearchResult>) message);
 				} else if (message instanceof FileBlockRequestMessage) {
-					node.executeInThreadPool(() -> {
+					node.submitToThreadPool(() -> {
 						try {
 							writeMessage(node.readBlockRequest((FileBlockRequestMessage) message));
 						} catch (IOException e) {
 							e.printStackTrace();
-							writeMessage(new FileBlockAnswerMessage(node.getPort(), null,
-									((FileBlockAnswerMessage) message).getOffset(),
-									((FileSearchResult) message).getHash()));
+							try {
+								writeMessage(new FileBlockAnswerMessage(node.getPort(), null,
+										((FileBlockRequestMessage) message).getOffset(),
+										((FileBlockRequestMessage) message).getHash()));
+							} catch (IOException e1) {
+								e1.printStackTrace();
+							}
 						}
 					});
 				} else if (message instanceof FileBlockAnswerMessage) {
 					node.submitBlockAnswer((FileBlockAnswerMessage) message);
-					downloadLatches.remove(((FileBlockAnswerMessage) message).getHash()).countDown();
+					CountDownLatch latch = downloadLatches.remove(((FileBlockAnswerMessage) message).getHash());
+					if (latch != null)
+						latch.countDown();
+					else
+						System.out.println("Latch not found for hash " + ((FileBlockAnswerMessage) message).getHash());
 				}
 			} catch (ClassNotFoundException | IOException e) {
-				if (e instanceof SocketException) {
-					node.getGui().removeConnection(port);
-					return;
+				// If any error happens, chances are the connection is broken forever, so might as well remove it
+				if (e instanceof SocketException)
+					System.out.println("Connection to " + port + " closed.");
+				else {
+					e.printStackTrace();
+					System.out.println("Ocorreu um erro na ligação à port " + port + ", esta será agora removida");
 				}
-				e.printStackTrace();
+				// node.getGui().removeConnection(port);
+				for (CountDownLatch latch : downloadLatches.values())
+					latch.countDown();
 				break;
 			}
 		}
 	}
 
-	public void writeMessage(Object message) {
-		try {
-			out.writeObject(message);
-			out.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	synchronized public void writeMessage(Object message) throws IOException {
+		out.writeObject(message);
+		out.flush();
 	}
 
-	public void awaitLatchForDownload(int hash) {
+	synchronized public CountDownLatch createLatchForDownload(int hash) {
 		if (downloadLatches.containsKey(hash))
 			throw new IllegalStateException("Latch already exists for this hash");
 		CountDownLatch downloadLatch = new CountDownLatch(1);
 		downloadLatches.put(hash, downloadLatch);
-		try {
-			downloadLatch.await();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		return downloadLatch;
 	}
 
 	private void closeConnection() {

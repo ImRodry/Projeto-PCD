@@ -36,7 +36,9 @@ public class Node {
         readFiles();
     }
 
-    private void readFiles() {
+    public void readFiles() {
+        // Clears to update deleted files when refreshing
+        files.clear();
         File[] rawFiles = new File(path).listFiles((File file) -> file.isFile());
         if (rawFiles == null)
             throw new IllegalArgumentException("Invalid path: " + path);
@@ -126,8 +128,8 @@ public class Node {
         }
     }
 
-    public void executeInThreadPool(Runnable task) {
-        downloadThreads.execute(task);
+    public void submitToThreadPool(Runnable task) {
+        downloadThreads.submit(task);
     }
 
     public void submitBlockAnswer(FileBlockAnswerMessage message) {
@@ -141,7 +143,7 @@ public class Node {
         return success;
     }
 
-    public void sendMessage(int port, Object message) {
+    public void sendMessage(int port, Object message) throws IOException {
         ConnectionHandler connection = connections.get(port);
         if (connection == null)
             throw new IllegalArgumentException("Connection to port " + port + " not found");
@@ -152,8 +154,9 @@ public class Node {
      * Sends a message to all connected nodes
      * 
      * @param message The object to send
+     * @throws IOException 
      */
-    public void sendMessage(Object message) {
+    public void sendMessage(Object message) throws IOException {
         for (ConnectionHandler connection : connections.values()) {
             connection.writeMessage(message);
         }
