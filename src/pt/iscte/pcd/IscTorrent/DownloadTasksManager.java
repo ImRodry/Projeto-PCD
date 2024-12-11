@@ -77,7 +77,7 @@ public class DownloadTasksManager implements Serializable {
 		// At this point we know the download is complete
 		threads.shutdown();
 		try {
-			if (!threads.awaitTermination(300, java.util.concurrent.TimeUnit.SECONDS))
+			if (!threads.awaitTermination(180, java.util.concurrent.TimeUnit.SECONDS))
 				return false;
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -88,6 +88,7 @@ public class DownloadTasksManager implements Serializable {
 		// If the file is null (wasn't in the map), the download failed at some point
 		if (file == null)
 			return false;
+		System.out.println("Download completed and successful, will write file to disk");
 		writeFile(file);
 		return true;
 	}

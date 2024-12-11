@@ -21,7 +21,7 @@ public class IscTorrent extends JFrame {
         super("IscTorrent [path=" + path + ", ip=localhost: " + port + "]");
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-        this.setSize(dimension.width / 2, dimension.height / 2);
+        this.setSize(dimension.width / 3, dimension.height / 3);
         this.setLocationRelativeTo(null);
         addFrameContent();
         try {
@@ -102,14 +102,14 @@ public class IscTorrent extends JFrame {
                 "Endereço:", ipField,
                 "Porta:", portField
         };
-        int option = JOptionPane.showConfirmDialog(null, message,
+        int option = JOptionPane.showConfirmDialog(this, message,
                 "Adicionar Nó", JOptionPane.OK_CANCEL_OPTION);
         if (option == JOptionPane.OK_OPTION) {
             String ip = ipField.getText();
             String port = portField.getText();
             try {
                 if (node.connectToNode(ip, Integer.parseInt(port)))
-                    JOptionPane.showMessageDialog(this, "Ligado ao endereço: " + ip + " Porta: " + port);
+                    JOptionPane.showMessageDialog(this, "Ligado ao endereço: " + ip + ":" + port);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, "Erro ao ligar ao nó: " + e.getMessage());
             }
@@ -153,14 +153,16 @@ public class IscTorrent extends JFrame {
             });
         }
         threads.shutdown();
-        try {
-            if (!threads.awaitTermination(180, java.util.concurrent.TimeUnit.SECONDS) || failed.get())
-                throw new IOException("Some of the downloads failed");
-            JOptionPane.showMessageDialog(this, "Os seguintes ficheiros foram descarregados com sucesso:\n"
-                    + files.stream().map(ListFile::getName).collect(Collectors.joining("\n")));
-        } catch (InterruptedException | IOException e) {
-            JOptionPane.showMessageDialog(this, "Algo correu mal ao descarregar os ficheiros");
-        }
+        new Thread(() -> {
+            try {
+                if (!threads.awaitTermination(180, java.util.concurrent.TimeUnit.SECONDS) || failed.get())
+                    throw new IOException("Some of the downloads failed");
+                JOptionPane.showMessageDialog(this, "Os seguintes ficheiros foram descarregados com sucesso:\n"
+                        + files.stream().map(ListFile::getName).collect(Collectors.joining("\n")));
+            } catch (InterruptedException | IOException e) {
+                JOptionPane.showMessageDialog(this, "Algo correu mal ao descarregar os ficheiros: " + e.getMessage());
+            }
+        }).start();
     }
 
     public void removeConnection(int port) {
