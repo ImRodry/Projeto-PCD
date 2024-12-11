@@ -78,7 +78,8 @@ public class IscTorrent extends JFrame {
     public void searchFiles(String search) {
         if (search == null || search.isEmpty()) {
             resultsList.clear();
-            JOptionPane.showMessageDialog(this, "Por favor insira um texto válido para procurar.");
+            JOptionPane.showMessageDialog(this, "Por favor insira um texto válido para procurar.", "Aviso",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
         // Clear both the map and the list to delete the old results and not display
@@ -90,7 +91,8 @@ public class IscTorrent extends JFrame {
             node.sendMessage(message);
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this,
-                    "Ocorreu um erro ao enviar a mensagem de pesquisa ao nó " + node.getPort());
+                    "Ocorreu um erro ao enviar a mensagem de pesquisa ao nó " + node.getPort(), "Erro",
+                    JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }
@@ -111,7 +113,8 @@ public class IscTorrent extends JFrame {
                 if (node.connectToNode(ip, Integer.parseInt(port)))
                     JOptionPane.showMessageDialog(this, "Ligado ao endereço: " + ip + ":" + port);
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Erro ao ligar ao nó: " + e.getMessage());
+                JOptionPane.showMessageDialog(this, "Erro ao ligar ao nó: " + e.getMessage(), "Erro",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -135,7 +138,8 @@ public class IscTorrent extends JFrame {
 
     public void downloadSelectedFiles(List<ListFile> files) {
         if (files.size() == 0) {
-            JOptionPane.showMessageDialog(this, "Por favor selecione um ficheiro para descarregar.");
+            JOptionPane.showMessageDialog(this, "Por favor selecione um ficheiro para descarregar.", "Aviso",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
         ExecutorService threads = Executors.newFixedThreadPool(files.size());
@@ -160,7 +164,9 @@ public class IscTorrent extends JFrame {
                 JOptionPane.showMessageDialog(this, "Os seguintes ficheiros foram descarregados com sucesso:\n"
                         + files.stream().map(ListFile::getName).collect(Collectors.joining("\n")));
             } catch (InterruptedException | IOException e) {
-                JOptionPane.showMessageDialog(this, "Algo correu mal ao descarregar os ficheiros: " + e.getMessage());
+                JOptionPane.showMessageDialog(this, "Algo correu mal ao descarregar os ficheiros: " + e.getMessage(),
+                        "Erro",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }).start();
     }
@@ -168,7 +174,8 @@ public class IscTorrent extends JFrame {
     public void removeConnection(int port) {
         node.removeConnection(port);
         SwingUtilities.invokeLater(
-                () -> JOptionPane.showMessageDialog(this, "Ligação ao nó " + port + " removida."));
+                () -> JOptionPane.showMessageDialog(this, "Ligação ao nó " + port + " removida.", "Aviso",
+                        JOptionPane.WARNING_MESSAGE));
     }
 
     public static void main(String[] args) {

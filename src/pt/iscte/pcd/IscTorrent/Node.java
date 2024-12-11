@@ -171,10 +171,11 @@ public class Node {
 
     public boolean connectToNode(String ip, int port) throws IOException {
         if (connections.containsKey(port)) {
-            JOptionPane.showMessageDialog(gui, "A conexão para esse nó já está estabelecida.");
+            JOptionPane.showMessageDialog(gui, "A conexão para esse nó já está estabelecida.", "Aviso",
+                    JOptionPane.WARNING_MESSAGE);
             return false;
         } else if (port == this.port) {
-            JOptionPane.showMessageDialog(gui, "Não é possível ligar a si mesmo.");
+            JOptionPane.showMessageDialog(gui, "Não é possível ligar a si mesmo.", "Erro", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         Socket connection = new Socket(ip, port);
